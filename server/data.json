@@ -1,0 +1,10 @@
+{
+  "users": [{ "id": 1, "name": "Usuario Demo", "email": "demo@truec.app", "password": "demo123" }],
+  "products": [
+    { "id": 1, "name": "PlayStation 5 Digital", "price": 8500, "condition": "Excelente estado", "category": "Consolas", "acceptsBarter": true },
+    { "id": 2, "name": "MacBook Air M2", "price": 19900, "condition": "Como nuevo", "category": "Laptops", "acceptsBarter": false },
+    { "id": 3, "name": "iPhone 14 Pro Max", "price": 14200, "condition": "Seminuevo", "category": "Celulares", "acceptsBarter": true }
+  ],
+  "trades": [],
+  "bids": [{ "id": 1, "auctionId": 1, "user": "carlos_mx", "amount": 3500, "createdAt": "2026-09-01T20:00:00.000Z" }]
+}
