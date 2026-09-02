@@ -1,6 +1,18 @@
 # Truec-app
 
-Prototipo móvil para comprar, subastar e intercambiar artículos tecnológicos. Incluye una interfaz React/Vite de cinco pantallas y un backend local sencillo, sin dependencias externas, que guarda los datos en `server/data.json`.
+Prototipo móvil para comprar, subastar e intercambiar artículos tecnológicos. Incluye una aplicación Android nativa en Kotlin/Jetpack Compose, el prototipo web original y un backend local sencillo que guarda los datos en `server/data.json`.
+
+## Abrir en Android Studio
+
+1. Abre Android Studio y selecciona **Open**.
+2. Elige la carpeta `android-app` de este repositorio.
+3. Espera a que finalice Gradle Sync.
+4. Inicia el backend desde la raíz con `npm run api`.
+5. Ejecuta la configuración `app` en un emulador Android.
+
+El emulador se conecta al backend de la computadora mediante `http://10.0.2.2:3001`. La app solicita permiso de Internet y permite HTTP local para esta etapa de desarrollo. En un teléfono físico se debe cambiar `BASE_URL` en `MainActivity.kt` por la IP local de la computadora, por ejemplo `http://192.168.1.20:3001`.
+
+La aplicación Android incluye login, catálogo con búsqueda, detalle de producto, propuesta de trueque, subasta y navegación inferior. Las propuestas y pujas se envían realmente al backend.
 
 ## Ejecutar el proyecto
 
@@ -11,7 +23,7 @@ npm run api
 npm run dev
 ```
 
-Abrir `http://localhost:8443`. Usuario de demostración: `demo@truec.app`; contraseña: `demo123`.
+Para usar el prototipo web, abrir `http://localhost:8443`. Para Android solo es necesario mantener `npm run api` activo. Usuario de demostración: `demo@truec.app`; contraseña: `demo123`.
 
 ## Primera parte: problema, usuarios y objetivo
 
