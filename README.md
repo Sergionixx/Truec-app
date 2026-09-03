@@ -12,7 +12,9 @@ Prototipo móvil para comprar, subastar e intercambiar artículos tecnológicos.
 
 El emulador se conecta al backend de la computadora mediante `http://10.0.2.2:3001`. La app solicita permiso de Internet y permite HTTP local para esta etapa de desarrollo. En un teléfono físico se debe cambiar `BASE_URL` en `MainActivity.kt` por la IP local de la computadora, por ejemplo `http://192.168.1.20:3001`.
 
-La aplicación Android incluye login, catálogo con búsqueda, detalle de producto, propuesta de trueque, subasta y navegación inferior. Las propuestas y pujas se envían realmente al backend.
+La aplicación Android incluye login, catálogo con búsqueda y filtros, detalle con estado y reputación, comparación de trueque, subasta, perfil demostrativo y navegación inferior. Cuando la API está disponible, las propuestas y pujas se envían al backend; si no lo está, la aplicación continúa en modo demo para facilitar la presentación académica.
+
+Las mejoras implementadas y las siguientes propuestas están documentadas en [`PROPUESTAS_MEJORA.md`](PROPUESTAS_MEJORA.md).
 
 ## Ejecutar el proyecto
 
