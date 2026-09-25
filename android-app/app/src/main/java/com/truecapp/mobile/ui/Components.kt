@@ -24,7 +24,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-internal val Teal = Color(0xFF00897B)
+internal val Teal = Color(0xFF00796B)
 internal val TealDark = Color(0xFF00695C)
 internal val TealSoft = Color(0xFFE0F2F1)
 internal val Navy = Color(0xFF1E3A8A)

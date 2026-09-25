@@ -1,3 +1,4 @@
+import { useModalFocus } from "./useModalFocus";
 import React, { useState, useEffect } from "react";
 import { Product } from "../types";
 import { ApiService } from "../services/api";
@@ -58,6 +59,7 @@ export const PublishProductModal: React.FC<PublishProductModalProps> = ({
     setErrors({});
   }, [productToEdit, isOpen]);
 
+  const dialogRef = useModalFocus(isOpen, onClose);
   if (!isOpen) return null;
 
   const validate = () => {
@@ -121,7 +123,7 @@ export const PublishProductModal: React.FC<PublishProductModalProps> = ({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-fade-in"
-      role="dialog"
+      ref={dialogRef} role="dialog"
       aria-modal="true"
       aria-labelledby="modal-publish-title"
       onKeyDown={(e) => e.key === "Escape" && onClose()}

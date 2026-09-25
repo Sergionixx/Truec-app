@@ -1,3 +1,4 @@
+import { useModalFocus } from "./useModalFocus";
 import React, { useState, useEffect } from "react";
 import { TradeProposal } from "../types";
 import { ApiService } from "../services/api";
@@ -69,6 +70,7 @@ export const TradesManagerModal: React.FC<TradesManagerModalProps> = ({ isOpen, 
     }
   };
 
+  const dialogRef = useModalFocus(isOpen, onClose);
   if (!isOpen) return null;
 
   const filtered = trades.filter((t) => {
@@ -91,7 +93,7 @@ export const TradesManagerModal: React.FC<TradesManagerModalProps> = ({ isOpen, 
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-fade-in"
-      role="dialog"
+      ref={dialogRef} role="dialog"
       aria-modal="true"
       aria-labelledby="modal-trades-title"
       onKeyDown={(e) => e.key === "Escape" && onClose()}
@@ -165,7 +167,7 @@ export const TradesManagerModal: React.FC<TradesManagerModalProps> = ({ isOpen, 
                   <div className="flex items-center gap-2">
                     {getStatusBadge(trade.status)}
                     <button
-                      onClick={() => handleDeleteTrade(trade.id)}
+                      hidden={trade.senderId !== ApiService.session()?.user.id || trade.status !== "pending"} onClick={() => handleDeleteTrade(trade.id)}
                       className="text-slate-400 hover:text-rose-600 p-1 rounded-md text-xs font-bold transition-colors focus:ring-1 focus:ring-rose-500"
                       aria-label="Eliminar propuesta de trueque"
                       title="Eliminar propuesta de trueque"
@@ -197,7 +199,7 @@ export const TradesManagerModal: React.FC<TradesManagerModalProps> = ({ isOpen, 
                 )}
 
                 {/* Actions if pending */}
-                {trade.status === "pending" && (
+                {trade.status === "pending" && trade.sellerId === ApiService.session()?.user.id && (
                   <div className="flex gap-2 pt-1">
                     <button
                       onClick={() => handleUpdateStatus(trade.id, "rejected")}

@@ -1,0 +1,85 @@
+Printing with useUnmergedTree = 'false'
+Node #1654 at (l=0.0, t=42.0, r=1411.0, b=720.0)px
+ |-Node #2599 at (l=0.0, t=42.0, r=1411.0, b=636.0)px
+ | IsTraversalGroup = 'true'
+ |  |-Node #2665 at (l=0.0, t=154.0, r=1411.0, b=496.0)px, Tag: 'product-list'
+ |  | IsTraversalGroup = 'true'
+ |  | VerticalScrollAxisRange = 'ScrollAxisRange(value=0.0, maxValue=100.0, reverseScrolling=false)'
+ |  | CollectionInfo = 'androidx.compose.ui.semantics.CollectionInfo@9800c42'
+ |  | Actions = [ScrollBy, ScrollByOffset, IndexForKey, ScrollToIndex, GetScrollViewportLength]
+ |  |  |-Node #2667 at (l=35.0, t=196.0, r=1376.0, b=266.0)px
+ |  |  | Focused = 'false'
+ |  |  | Role = 'Button'
+ |  |  | Text = '[Nueva publicación]'
+ |  |  | Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |  |  | MergeDescendants = 'true'
+ |  |  |-Node #2671 at (l=35.0, t=298.0, r=1376.0, b=554.0)px
+ |  |    IsTraversalGroup = 'true'
+ |  |    Focused = 'false'
+ |  |    Text = '[📲, TABLETS, iPad Air 5, $9,800.00, Buen estado · Trueque]'
+ |  |    Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |  |    MergeDescendants = 'true'
+ |  |-Node #2610 at (l=0.0, t=42.0, r=1411.0, b=154.0)px
+ |  | IsTraversalGroup = 'true'
+ |  |  |-Node #2613 at (l=14.0, t=63.0, r=84.0, b=133.0)px
+ |  |  | Role = 'Button'
+ |  |  | Focused = 'false'
+ |  |  | ContentDescription = '[Volver]'
+ |  |  | Actions = [OnClick, RequestFocus]
+ |  |  | MergeDescendants = 'true'
+ |  |  |-Node #2617 at (l=98.0, t=45.0, r=335.0, b=97.0)px
+ |  |  | Text = '[Mi inventario]'
+ |  |  | Actions = [SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |  |  |-Node #2618 at (l=98.0, t=97.0, r=343.0, b=151.0)px
+ |  |  | Text = '[Modo demo · sin conexión]'
+ |  |  | Actions = [SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |  |  |-Node #2621 at (l=1327.0, t=63.0, r=1397.0, b=133.0)px
+ |  |    Role = 'Button'
+ |  |    Focused = 'false'
+ |  |    ContentDescription = '[Publicar producto]'
+ |  |    Actions = [OnClick, RequestFocus]
+ |  |    MergeDescendants = 'true'
+ |  |-Node #2626 at (l=0.0, t=496.0, r=1411.0, b=636.0)px
+ |    IsTraversalGroup = 'true'
+ |     |-Node #2627 at (l=0.0, t=496.0, r=1411.0, b=636.0)px
+ |       [SelectableGroup]
+ |        |-Node #2628 at (l=0.0, t=496.0, r=343.0, b=636.0)px
+ |        | Role = 'Tab'
+ |        | Focused = 'false'
+ |        | Selected = 'false'
+ |        | Text = '[Inicio]'
+ |        | Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |        | MergeDescendants = 'true'
+ |        |-Node #2637 at (l=357.0, t=496.0, r=699.0, b=636.0)px
+ |        | Role = 'Tab'
+ |        | Focused = 'false'
+ |        | Selected = 'false'
+ |        | Text = '[Trueques]'
+ |        | Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |        | MergeDescendants = 'true'
+ |        |-Node #2646 at (l=713.0, t=496.0, r=1055.0, b=636.0)px
+ |        | Role = 'Tab'
+ |        | Focused = 'false'
+ |        | Selected = 'false'
+ |        | Text = '[Subastas]'
+ |        | Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |        | MergeDescendants = 'true'
+ |        |-Node #2655 at (l=1069.0, t=496.0, r=1411.0, b=636.0)px
+ |          Role = 'Tab'
+ |          Focused = 'false'
+ |          Selected = 'true'
+ |          Text = '[Perfil]'
+ |          Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |          MergeDescendants = 'true'
+ |-Node #2601 at (l=14.0, t=636.0, r=1106.0, b=720.0)px
+   IsTraversalGroup = 'true'
+    |-Node #2604 at (l=42.0, t=658.0, r=299.0, b=698.0)px
+    | Text = '[Publicación retirada.]'
+    | Actions = [SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+    |-Node #2606 at (l=971.0, t=643.0, r=1092.0, b=713.0)px
+      Focused = 'false'
+      Role = 'Button'
+      Text = '[Cerrar]'
+      Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+      MergeDescendants = 'true'
+Notice: Publicación retirada.

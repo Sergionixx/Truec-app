@@ -13,6 +13,7 @@ export interface User {
 }
 
 export interface Product {
+  sellerId?: number;
   id: number;
   name: string;
   price: number;
@@ -32,6 +33,8 @@ export interface Product {
 }
 
 export interface TradeProposal {
+  senderId?: number;
+  sellerId?: number;
   id: number;
   wantedProductId: number;
   wantedProductName: string;
@@ -46,6 +49,8 @@ export interface TradeProposal {
 }
 
 export interface AuctionItem {
+  sellerId?: number;
+  endsAt?: string;
   id: number;
   name: string;
   startingPrice: number;

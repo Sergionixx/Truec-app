@@ -1,3 +1,4 @@
+import { useModalFocus } from "./components/useModalFocus";
 import React, { useState, useEffect, useId } from "react";
 import { NavTab, ViewMode, Product, ToastNotification, User, AuctionItem } from "./types";
 import { ApiService } from "./services/api";
@@ -10,7 +11,7 @@ import { DeviceToolbar } from "./components/DeviceToolbar";
 
 // ─── Color Tokens ────────────────────────────────────────────────────────────
 const C = {
-  teal: "#00897B",
+  teal: "#00796B",
   tealLight: "#E0F2F1",
   tealDark: "#00695C",
   navy: "#1E3A8A",
@@ -47,16 +48,12 @@ function DeviceFrame({
     <div
       className="relative flex flex-col overflow-hidden bg-slate-50 transition-all duration-300"
       style={{
-        width: 393,
-        height: 852,
+        width: "min(393px, 100vw)",
+        height: "max(740px, calc(100dvh - 110px))",
         borderRadius: 44,
         boxShadow: "0 25px 60px -15px rgba(0,0,0,0.3), 0 0 0 10px #1e293b",
       }}
     >
-      {/* Notch / Dynamic Island */}
-      <div className="absolute top-2.5 left-1/2 -translate-x-1/2 w-28 h-6 bg-slate-900 rounded-full z-30 pointer-events-none flex items-center justify-end px-3">
-        <div className="w-2.5 h-2.5 rounded-full bg-slate-950 border border-slate-800" />
-      </div>
       {children}
     </div>
   );
@@ -645,7 +642,7 @@ function HomeScreen({
           <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
             {activeCategory} ({filteredProducts.length})
           </span>
-          <span className="text-[11px] text-slate-400 font-medium">Verificados con garantía</span>
+          <span className="text-[11px] text-slate-400 font-medium">Productos de ejemplo</span>
         </div>
 
         {/* Grid */}
@@ -678,6 +675,8 @@ function HomeScreen({
               return (
                 <article
                   key={p.id}
+                  role="button" tabIndex={0} aria-label={"Ver " + p.name}
+                  onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelectProduct(p); } }}
                   onClick={() => onSelectProduct(p)}
                   className="bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group"
                 >
@@ -837,7 +836,7 @@ function DetailScreen({
           )}
 
           {/* Acciones de Edición y Eliminación */}
-          <div className="pt-2 flex gap-3">
+          <div className="pt-2 flex gap-3" style={{ display: ApiService.owns(product) ? undefined : "none" }}>
             <button
               type="button"
               onClick={() => onEditProduct?.(product)}
@@ -868,7 +867,7 @@ function DetailScreen({
           onClick={() => showToast("En este prototipo académico se prioriza el trueque y subasta.", "info")}
           className="flex-1 py-3.5 px-4 rounded-xl border-2 border-slate-300 text-slate-700 font-bold text-xs hover:bg-slate-50 transition-colors focus:ring-2 focus:ring-slate-400 outline-none"
         >
-          Comprar Ahora
+          Sobre las compras
         </button>
         <button
           onClick={onTrade}
@@ -909,6 +908,7 @@ function TradeScreen({
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const confirmRef = useModalFocus(showConfirm, () => setShowConfirm(false));
 
   const handleSendTrade = async () => {
     setSubmitting(true);
@@ -1031,11 +1031,11 @@ function TradeScreen({
 
       {/* Confirmation Dialog */}
       {showConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in" role="dialog" aria-modal="true">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in" ref={confirmRef} role="dialog" aria-label="Confirmar operación" aria-modal="true">
           <div className="bg-white rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl border border-slate-200">
             <h3 className="font-bold text-base text-slate-800">¿Confirmar propuesta de trueque?</h3>
             <p className="text-xs text-slate-600">
-              Ofrecerás tu <strong>{inventory[selectedIdx].name}</strong> por el <strong>{targetProduct.name}</strong>. El vendedor recibirá la notificación inmediatamente.
+              Ofrecerás tu <strong>{inventory[selectedIdx].name}</strong> por el <strong>{targetProduct.name}</strong>. El vendedor podrá consultar la propuesta en su cuenta.
             </p>
             <div className="flex gap-2 pt-2">
               <button
@@ -1074,13 +1074,16 @@ function AuctionScreen({
   const [auctions, setAuctions] = useState<AuctionItem[]>([]);
   const [selectedAuction, setSelectedAuction] = useState<AuctionItem | null>(null);
   const [bids, setBids] = useState<any[]>([]);
-  const [timeSec, setTimeSec] = useState(5140);
+  const [clock, setClock] = useState(Date.now());
+  const timeSec = Math.max(0, Math.ceil(((Date.parse(selectedAuction?.endsAt || "") || 0) - clock) / 1000));
   const [bidAmount, setBidAmount] = useState("3600");
   const [loading, setLoading] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const confirmRef = useModalFocus(showConfirm, () => setShowConfirm(false));
 
   // Modal for create/edit auction
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const auctionRef = useModalFocus(isModalOpen, () => setIsModalOpen(false));
   const [auctionToEdit, setAuctionToEdit] = useState<AuctionItem | null>(null);
   const [name, setName] = useState("");
   const [startingPrice, setStartingPrice] = useState("");
@@ -1089,7 +1092,7 @@ function AuctionScreen({
 
   useEffect(() => {
     loadAuctions();
-    const interval = setInterval(() => setTimeSec((t) => Math.max(0, t - 1)), 1000);
+    const interval = setInterval(() => setClock(Date.now()), 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -1097,10 +1100,9 @@ function AuctionScreen({
     try {
       const list = await ApiService.getAuctions();
       setAuctions(list);
-      if (list.length > 0 && !selectedAuction) {
-        setSelectedAuction(list[0]);
-        loadBids(list[0].id);
-      }
+      const next = list.find(a => a.id === selectedAuction?.id) || list[0] || null;
+      setSelectedAuction(next);
+      if (next) loadBids(next.id); else setBids([]);
     } catch {
       showToast("Error al cargar subastas", "error");
     }
@@ -1173,14 +1175,12 @@ function AuctionScreen({
 
   const handleDeleteAuction = async (id: number) => {
     if (window.confirm("¿Confirmas que deseas eliminar esta subasta?")) {
-      await ApiService.deleteAuction(id);
-      showToast("Subasta eliminada", "info");
-      loadAuctions();
+      try { await ApiService.deleteAuction(id); showToast("Subasta eliminada", "info"); await loadAuctions(); } catch (err: any) { showToast(err.message, "error"); }
     }
   };
 
   const handlePlaceBid = async () => {
-    if (!selectedAuction) return;
+    if (!selectedAuction || timeSec <= 0) { showToast("La subasta ha terminado.", "error"); return; }
     const num = Number(bidAmount);
     setLoading(true);
     try {
@@ -1227,7 +1227,8 @@ function AuctionScreen({
               const isSel = selectedAuction?.id === a.id;
               return (
                 <div
-                  key={a.id}
+                  key={a.id} role="button" tabIndex={0} aria-label={"Ver subasta " + a.name}
+                  onKeyDown={e => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setSelectedAuction(a); loadBids(a.id); } }}
                   onClick={() => {
                     setSelectedAuction(a);
                     loadBids(a.id);
@@ -1240,7 +1241,7 @@ function AuctionScreen({
                   <h4 className="font-bold text-xs text-slate-800 line-clamp-1">{a.name}</h4>
                   <div className="flex items-center justify-between mt-2 pt-1 border-t border-slate-100">
                     <span className="text-[11px] font-extrabold text-teal-700">${a.startingPrice.toLocaleString()}</span>
-                    {selectedAuction?.id === a.id && (
+                    {selectedAuction?.id === a.id && ApiService.owns(a) && (
                       <div className="flex gap-1">
                         <button
                           onClick={(e) => { e.stopPropagation(); handleOpenEdit(a); }}
@@ -1332,7 +1333,7 @@ function AuctionScreen({
                   <span className="absolute right-3 top-3 text-slate-400 text-xs font-semibold">MXN</span>
                 </div>
                 <button
-                  onClick={() => setShowConfirm(true)}
+                  disabled={timeSec <= 0 || ApiService.owns(selectedAuction)} onClick={() => setShowConfirm(true)}
                   className="py-2.5 px-5 rounded-xl bg-teal-600 text-white font-bold text-xs hover:bg-teal-700 shadow-md shadow-teal-600/30 transition-colors focus:ring-2 focus:ring-teal-700 outline-none"
                 >
                   Pujar
@@ -1373,7 +1374,7 @@ function AuctionScreen({
 
       {/* Modal for Create/Edit Auction */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-fade-in" role="dialog" aria-modal="true">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-fade-in" ref={auctionRef} role="dialog" aria-label="Confirmar operación" aria-modal="true">
           <div className="bg-white rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl border border-slate-200">
             <h3 className="text-lg font-bold text-slate-800">
               {auctionToEdit ? "Editar Subasta" : "Publicar Nueva Subasta"}
@@ -1415,7 +1416,7 @@ function AuctionScreen({
               <div>
                 <label className="block uppercase text-[10px] text-slate-600 mb-1">Descripción</label>
                 <textarea
-                  rows={2}
+                  rows={2} aria-label="Descripción de la subasta"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Detalles del artículo en subasta..."
@@ -1444,7 +1445,7 @@ function AuctionScreen({
 
       {/* Confirmation modal for bidding */}
       {showConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in" role="dialog" aria-modal="true">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in" ref={confirmRef} role="dialog" aria-label="Confirmar operación" aria-modal="true">
           <div className="bg-white rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl border border-slate-200">
             <h3 className="font-bold text-base text-slate-800">¿Confirmar puja de subasta?</h3>
             <p className="text-xs text-slate-600">
@@ -1587,6 +1588,7 @@ export default function App() {
   const [viewMode, setViewMode] = useState<ViewMode>("phone");
   const [activeTab, setActiveTab] = useState<NavTab>("inicio");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [tradeTarget, setTradeTarget] = useState<Product | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isOnline, setIsOnline] = useState(false);
@@ -1599,6 +1601,8 @@ export default function App() {
   const [isPlayStoreOpen, setIsPlayStoreOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
+
+  useEffect(() => { const id = setInterval(() => setIsOnline(ApiService.getMode() === "online"), 1000); return () => clearInterval(id); }, []);
 
   const handleOpenPublish = () => {
     setProductToEdit(null);
@@ -1732,7 +1736,7 @@ export default function App() {
             <span className="text-white text-xs font-bold block mb-2">Pantalla 4: Proponer Trueque</span>
             <DeviceFrame viewMode="phone">
               <TradeScreen
-                targetProduct={selectedProduct || {
+                targetProduct={tradeTarget || {
                   id: 1,
                   name: "PlayStation 5 Digital Edition",
                   price: 8500,
@@ -1774,7 +1778,6 @@ export default function App() {
           isOpen={isGuideOpen}
           onClose={() => setIsGuideOpen(false)}
           showToast={showToast}
-          onNavigateTab={setActiveTab}
           onOpenPublish={handleOpenPublish}
           onOpenTrades={() => setIsTradesOpen(true)}
           onOpenPlayStore={() => setIsPlayStoreOpen(true)}
@@ -1805,7 +1808,7 @@ export default function App() {
               product={selectedProduct}
               onBack={() => setSelectedProduct(null)}
               onTrade={() => {
-                setActiveTab("trueques");
+                setTradeTarget(selectedProduct); setSelectedProduct(null); setActiveTab("trueques");
               }}
               onTab={(t) => {
                 setSelectedProduct(null);
@@ -1825,7 +1828,7 @@ export default function App() {
             />
           ) : activeTab === "trueques" ? (
             <TradeScreen
-              targetProduct={selectedProduct || {
+              targetProduct={tradeTarget || {
                 id: 1,
                 name: "PlayStation 5 Digital Edition",
                 price: 8500,
@@ -1850,7 +1853,7 @@ export default function App() {
               onOpenPublish={handleOpenPublish}
               onOpenTrades={() => setIsTradesOpen(true)}
               onLogout={() => {
-                localStorage.removeItem("truec-session");
+                void ApiService.logout().catch(() => {});
                 setIsLoggedIn(false);
                 setCurrentUser(null);
                 showToast("Sesión cerrada correctamente", "info");
@@ -1876,7 +1879,6 @@ export default function App() {
         isOpen={isGuideOpen}
         onClose={() => setIsGuideOpen(false)}
         showToast={showToast}
-        onNavigateTab={setActiveTab}
         onOpenPublish={handleOpenPublish}
         onOpenTrades={() => setIsTradesOpen(true)}
         onOpenPlayStore={() => setIsPlayStoreOpen(true)}

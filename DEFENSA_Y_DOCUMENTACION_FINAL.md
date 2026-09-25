@@ -1,147 +1,52 @@
-# Documentación Final y Defensa del Proyecto — Truec-app
+﻿# Documentación técnica y validación
 
-**Proyecto:** Truec-app — Marketplace Móvil y Web para Compra, Subasta e Intercambio Tecnológico  
-**Versión de Entrega:** 1.2.0 (Build 12)  
-**Fecha:** Septiembre de 2026  
-**Puntuación Objetivo de la Rúbrica:** 100% (25% + 20% + 20% + 20% + 15%)  
+## Arquitectura y decisiones
 
----
+Android usa Kotlin, Activity/XML para el registro y Compose para el marketplace. Room proporciona entidades, DAO y consultas comprobadas durante la compilación. AppDatabase se crea como singleton con applicationContext, @Volatile y synchronized para evitar instancias duplicadas. MainActivity valida todos los campos después de trim y utiliza lifecycleScope con Dispatchers.IO; deshabilita Guardar mientras se inserta y diferencia errores de inserción de errores al actualizar el contador.
 
-## 1. Resumen Ejecutivo y Ficha Técnica
+El marketplace Android usa una base Room independiente y operaciones transaccionales para publicaciones, propuestas y pujas. Conservar esta implementación evita depender de una IP local durante la exposición. El formulario de registro y el catálogo se conectan mediante un botón; son módulos académicos, no un sistema de autenticación unificado.
 
-| Parámetro | Detalle |
-|---|---|
-| **Aplicación** | Truec-app: Marketplace Tech |
-| **Público Objetivo** | Estudiantes universitarios y jóvenes profesionales (18-40 años) apasionados por la tecnología |
-| **Propuesta de Valor** | Economía circular tecnológica: adquisición de gadgets mediante trueque directo o subasta en vivo sin intermediarios costosos |
-| **Frontend Web** | React 19, TypeScript 5.7, TailwindCSS v4, Vite 8 |
-| **Backend REST API** | Node.js (servidor nativo HTTP, persistencia JSON en `server/data.json`) |
-| **Aplicación Android** | Kotlin 2.0, Jetpack Compose, Material Design 3, minSdk 24 (Android 7.0+), compileSdk 36 |
-| **Estándar de Accesibilidad** | WCAG 2.1 Nivel AA verificado |
-| **Distribución y Publicación** | PWA instalable (`manifest.json`) y paquete Android APK release simulado (`release/`) |
+La web React consume una API Node local. Esta API persiste JSON mediante reemplazo de archivo y serializa cada ciclo de lectura/modificación/escritura para evitar pérdidas por concurrencia. No se afirma que JSON sea una base SQL: el requisito de base local se sustenta en Room de Android. Las dos versiones no sincronizan sus datos.
 
----
+Las sesiones web son tokens aleatorios; el servidor conserva solo su hash y vencimiento. Las contraseñas se derivan con scrypt y sal individual. Los permisos se comprueban por identificador del usuario, no por el nombre mostrado. El emisor puede retirar su propuesta pendiente; el destinatario puede aceptarla o rechazarla. Una subasta con pujas no se edita ni elimina. Las ofertas deben superar el precio inicial y la puja mayor, y llegar antes del cierre persistido.
 
-## 2. Matriz de Cumplimiento de la Rúbrica (100% Verificado)
+Las operaciones web rechazadas o sin conexión conservan el error: no devuelven éxito local. Las consultas pueden usar caché por usuario y por subasta; no se ofrece sincronización offline de escrituras. Las cuentas iniciales y datos son ficticios. El servidor está pensado para ejecución local de evaluación, no para exposición pública.
 
-| Criterio de la Rúbrica | Ponderación | Evidencia Técnica en el Código | Justificación y Resultado |
-|---|---|---|---|
-| **1. Implementa funcionalidad e integración de datos** | **25%** | • `server/index.mjs` (endpoints CRUD: `GET/POST /api/products`, `GET/POST/PATCH /api/trades`, `GET/POST /api/auctions/1/bids`, `POST /api/reset`)<br>• `src/services/api.ts` (capa de servicios cliente con fallback offline transparente)<br>• `server/data.json` enriquecido | Se completó el ciclo de vida del marketplace: publicar productos con fotos, proponer intercambios desde inventario, responder propuestas (Aceptar/Rechazar), y subastar en vivo con validación estricta de pujas superiores. Funciona tanto online como offline. |
-| **2. Optimiza el diseño UX/UI** | **20%** | • `src/components/Toast.tsx` (notificaciones emergentes)<br>• `src/components/DeviceToolbar.tsx` (selector de modos: Teléfono, Pantalla Completa y Canvas Figma)<br>• Diálogos de confirmación antes de pujar o intercambiar<br>• Estados vacíos (empty states) y corazones de favoritos interactivos | Se adoptaron los principios de Material Design 3 y Apple HIG: coherencia de colores (Teal circular, Navy confianza, Ámbar subasta), micro-interacciones, retroalimentación táctil y soporte para visualización de presentaciones académicas. |
-| **3. Garantiza accesibilidad y adaptación a dispositivos** | **20%** | • `index.html` (meta viewport táctil, lang="es")<br>• `src/App.tsx` (etiquetas `aria-label`, roles semánticos `tablist`, `radiogroup`, `dialog`, contraste de texto 4.5:1+)<br>• Navegación por teclado completa (`focus-visible`)<br>• Diseño fluido que responde desde 320px hasta 4K | Cumple con WCAG 2.1 AA. Todos los botones de iconos tienen etiquetas descriptivas para lectores de pantalla. Las áreas táctiles superan los 44×44 px mínimos requeridos. |
-| **4. Documenta y justificar el desarrollo** | **20%** | • `DEFENSA_Y_DOCUMENTACION_FINAL.md` (este documento maestro)<br>• `GUIA_VIDEO_DEMOSTRATIVO.md` (guion cronometrado de grabación)<br>• `README.md` actualizado con instrucciones de ejecución rápida y comandos paso a paso | Justificación basada en datos empíricos de mercado: 90.9% de interés en tecnología, 90.9% de apertura al trueque. Arquitectura documentada con diagramas de flujo y modelos de datos. |
-| **5. Demuestra y simula publicación** | **15%** | • `public/manifest.json` y `public/icon.svg` (PWA instalable)<br>• `src/components/PlayStoreModal.tsx` (simulador navegable de Google Play Store con descarga interactiva)<br>• `scripts/simulate-release.mjs` y `release/` (APK firmado simulado, checksum SHA-256 y metadatos) | Se reproduce con total fidelidad el proceso de lanzamiento a producción tanto en la web como en Google Play Console, incluyendo tamaño de descarga (24.6 MB), permisos de red y políticas de privacidad. |
-| **TOTAL** | **100%** | **Archivos compilados, probados y listos para entrega** | **Cumplimiento sobresaliente de todos los indicadores.** |
+## UX y accesibilidad
 
----
+La interfaz conserva navegación consistente, mensajes de error y éxito separados, confirmaciones para operaciones y campos con etiquetas. Las tarjetas web se pueden activar con Enter o espacio. Los diálogos trasladan y contienen el foco, deshabilitan la interacción con el fondo, cierran con Escape y restauran el foco al control que los abrió. Se añadieron controles de texto grande y alto contraste y respeto a movimiento reducido. El verde principal se oscureció a #00796B.
 
-## 3. Justificación del Problema y Estudio de Usuarios
+Se comprobó el catálogo web a 320, 390, 768 y 1280 px con texto grande y alto contraste: no hubo desbordamiento horizontal del documento. La revisión visual mostró contenido desplazable. Las pruebas Android corrieron también con el dispositivo en horizontal; se corrigió el desplazamiento de las pruebas para elementos de LazyColumn que aún no estaban compuestos. Las pantallas usan listas/ScrollView y tamaños de texto sp.
 
-### 3.1. Problemática Identificada
-1. **Obsolescencia acelerada y basura electrónica (E-waste):** Millones de dispositivos tecnológicos plenamente funcionales son almacenados en cajones debido a la compra recurrente de modelos recientes.
-2. **Barrera económica para estudiantes y jóvenes profesionales:** El costo de computadoras portátiles, teléfonos inteligentes y consolas de última generación supera la capacidad de pago al contado de gran parte de la población estudiantil.
-3. **Falta de confianza en el trueque tradicional:** Las redes sociales y foros informales carecen de reputación visible, verificación de vendedores y criterios claros de comparación de valor.
+No se realizó una auditoría integral con TalkBack ni una certificación WCAG. Las capturas y estas pruebas cubren los casos indicados; no garantizan todas las combinaciones de lector, zoom, sistema operativo y dispositivo.
 
-### 3.2. Validación con Datos de Encuesta (90.9%)
-El diseño de Truec-app responde directamente a las preferencias declaradas por los usuarios potenciales:
-- **90.9%** de los encuestados manifestó un alto interés en adquirir productos tecnológicos seminuevos si cuentan con descripción honesta de su estado.
-- **90.9%** está dispuesto a realizar trueques de tecnología si existe una plataforma que transparente el valor relativo de ambos artículos.
-- **90.9%** prioriza la verificación de reputación y condiciones visuales claras antes de concretar una transacción.
+## Pruebas y evidencia
 
----
+- TypeScript: `npm run typecheck`, sin errores.
+- Web: `npm run build`, compilación completada.
+- API/cliente: `npm test`, suite de integración aprobada. Incluye duplicados, permisos, importes inválidos, inexistencia de productos/subastas, subasta vencida, aislamiento de pujas, ocho escrituras simultáneas y persistencia tras reinicio. También comprueba que el cliente no transforma errores en éxitos.
+- Android: assembleDebug y lintDebug completados. Lint: cero errores y siete advertencias de dependencias.
+- Android: 18 pruebas instrumentadas aprobadas (4 UI, 11 repositorio y 3 registro).
+- Recorrido adicional: 1 prueba aprobada con registro vacío, formulario lleno, éxito, catálogo, detalle, envío de trueque, propuestas, puja inválida/válida, perfil e inventario.
+- Navegador: registro de foco, Escape, navegación con teclado y propuesta para el producto seleccionado; simulador de publicación accesible desde la barra.
+- APK: firma v2 comprobada con apksigner; checksum SHA-256 calculado sobre el archivo entregado.
 
-## 4. Arquitectura del Sistema y Decisiones de Diseño
+Los registros se conservan en `docs/validacion-final/`. Los archivos de `docs/evidencias/`, `docs/registro/evidencias/` y `docs/REVISION_RUBRICA.md` anteriores a esta integración son históricos; no describen el estado final de Victor corregido.
 
-```mermaid
-flowchart TD
-    subgraph Client ["Frontend & Dispositivos"]
-        Web["Web App React 19 (Vite + Tailwind)"]
-        PWA["PWA Instalable (Manifest + Service Worker)"]
-        Android["Android Nativo (Kotlin Compose)"]
-    end
+## Entrega y simulación
 
-    subgraph ServiceLayer ["Capa de Resiliencia"]
-        ApiService["ApiService (src/services/api.ts)"]
-        LocalStorage[("Almacenamiento Local Resiliente")]
-    end
+`output/entrega-final/` contiene código ZIP sin build/dist/node_modules, APK debug, PDF y video MP4. El paquete Android com.truecapp.mobile.demo permite coexistir con el anterior. El APK es instalable y firmado con clave de desarrollo; no es un release para producción.
 
-    subgraph Backend ["Backend Local / Cloud"]
-        NodeServer["Servidor HTTP Node.js (puerto 3001)"]
-        DataJson[("Persistencia server/data.json")]
-    end
+El video combina 40.4 segundos de grabación real del dispositivo con 35 segundos de capturas del recorrido web de publicación. Muestra datos ficticios y no incluye audio. El simulador presenta ficha, privacidad, artefacto, revisión y finalización; no envía nada a Google Play. No se entrega una firma privada ni se afirma haber publicado la aplicación.
 
-    Web --> ApiService
-    PWA --> ApiService
-    Android -.-> NodeServer
-    ApiService -->|Modo Online| NodeServer
-    ApiService -->|Modo Offline Fallback| LocalStorage
-    NodeServer --> DataJson
-```
+## Correspondencia con la rúbrica
 
-### 4.1. Resiliencia ante Fallos (Modo Offline Transparente)
-Para garantizar que una demostración académica o evaluación en vivo **nunca falle** por falta de conexión o porque el evaluador no inició el servidor backend en una terminal secundaria:
-- `src/services/api.ts` monitorea en segundo plano la disponibilidad de `/api/health`.
-- Si el backend está activo, todas las operaciones de lectura y escritura se persisten en `server/data.json`.
-- Si el backend no está disponible, la app conmuta de forma invisible a `localStorage`, permitiendo iniciar sesión, publicar productos, enviar propuestas y pujar en subastas sin emitir excepciones de red.
+| Criterio | Sustento entregado | Límite explícito |
+|---|---|---|
+| Funcionalidad y datos | Room, API validada, pruebas positivas y negativas, persistencia | Android y web son módulos con datos independientes; demo local |
+| UX/UI | Navegación, formularios, estados y mensajes; capturas y recorrido | Compras y pagos reales fuera del alcance |
+| Accesibilidad/dispositivos | Etiquetas, teclado, foco, contraste, texto grande, cuatro anchos | Sin certificación WCAG ni auditoría integral TalkBack |
+| Documentación | Decisiones, código, pruebas y capturas en PDF y repositorio | Resultados limitados a los entornos descritos |
+| Video/publicación | MP4 de app real y simulación; APK/ZIP/PDF/hash | Simulación académica; no publicación real |
 
----
-
-## 5. Diseño Inclusivo y Accesibilidad (WCAG 2.1 AA)
-
-1. **Relación de Contraste Cromático:**
-   - Texto principal (`#1E293B`) sobre fondo neutro (`#F8FAFC`): Contraste **12.6:1** (supera con creces el mínimo de 4.5:1).
-   - Botón de acción principal verde teal (`#00897B`) con texto blanco (`#FFFFFF`): Contraste **4.6:1** (aprobado AA).
-   - Botón secundario azul marino (`#1E3A8A`) con texto blanco: Contraste **9.5:1** (aprobado AAA).
-2. **Semántica y Lectores de Pantalla:**
-   - Uso de elementos nativos: `<main>`, `<nav>`, `<header>`, `<article>`, `<dialog>`, `<form>`.
-   - Etiquetas `aria-label` descriptivas en todos los botones de iconos (`"Volver al catálogo"`, `"Guardar en favoritos"`, `"Publicar artículo"`).
-   - Áreas de interacción táctil con mínimo de **44×44 px**, evitando toques erróneos en pantallas táctiles pequeñas.
-   - Navegación por teclado completa con indicador visual de foco (`focus-visible:ring-2 focus-visible:ring-teal-600`).
-   - Anuncios dinámicos en tiempo real con `aria-live="polite"` para notificaciones de pujas y estados de trueque.
-
----
-
-## 6. Pruebas Realizadas y Resultados
-
-### 6.1. Pruebas Automatizadas de Compilación
-- Comando ejecutado: `npm run build`
-- Resultado: **0 errores de TypeScript, 0 fallos de Vite**.
-- Tiempo de empaquetado: **284 ms**.
-- Archivos generados: `dist/index.html` (1.95 kB), `dist/assets/*.js` (284 kB con compresión gzip a 82 kB).
-
-### 6.2. Pruebas de la API REST
-- `GET /api/health` -> `200 OK` (ok: true, service: truec-api, version: 1.2.0).
-- `POST /api/login` -> `200 OK` con credenciales demo; `401 Unauthorized` con credenciales inválidas.
-- `GET /api/products?category=Consolas` -> `200 OK` (filtrado reactivo correcto).
-- `POST /api/products` -> `201 Created` con validación de campos obligatorios.
-- `POST /api/trades` y `PATCH /api/trades/:id` -> `201 Created` y `200 OK` (cambio de estado reflejado).
-- `POST /api/auctions/1/bids` -> `201 Created` cuando supera la puja actual; `400 Bad Request` si es menor o igual.
-
-### 6.3. Pruebas de Release y Publicación Simulada
-- Comando ejecutado: `npm run simulate:release`
-- Resultado: Generación exitosa de `release/Truec-app-v1.2.0-release.apk`, verificación de checksum SHA-256, metadatos JSON para Google Play Store y checklist de publicación.
-
----
-
-## 7. Instrucciones para el Evaluador
-
-1. **Ejecución en una sola terminal:**
-   ```bash
-   npm run dev
-   ```
-   Abrir en el navegador: `http://localhost:8443`
-
-2. **Ejecución con backend Node.js activo (opcional):**
-   ```bash
-   npm run api
-   ```
-   Disponible en: `http://localhost:3001`
-
-3. **Demostración de release de APK y Google Play:**
-   ```bash
-   npm run simulate:release
-   ```
-
-4. **Credenciales de demostración:**
-   - Correo: `demo@truec.app`
-   - Contraseña: `demo123`
+La evidencia permite evaluar lo implementado sin asignarse una calificación automática. La puntuación corresponde al docente.

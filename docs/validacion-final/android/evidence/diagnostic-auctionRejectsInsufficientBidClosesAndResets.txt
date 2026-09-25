@@ -1,0 +1,144 @@
+Printing with useUnmergedTree = 'false'
+Node #1 at (l=0.0, t=42.0, r=1411.0, b=720.0)px
+ |-Node #458 at (l=0.0, t=42.0, r=1411.0, b=636.0)px
+ | IsTraversalGroup = 'true'
+ |  |-Node #522 at (l=0.0, t=154.0, r=1411.0, b=496.0)px, Tag: 'catalog'
+ |  | IsTraversalGroup = 'true'
+ |  | VerticalScrollAxisRange = 'ScrollAxisRange(value=0.0, maxValue=100.0, reverseScrolling=false)'
+ |  | CollectionInfo = 'androidx.compose.ui.semantics.CollectionInfo@8bbd2f2'
+ |  | Actions = [ScrollBy, ScrollByOffset, IndexForKey, ScrollToIndex, GetScrollViewportLength]
+ |  |  |-Node #524 at (l=35.0, t=189.0, r=1376.0, b=291.0)px, Tag: 'search'
+ |  |  | EditableText = ''
+ |  |  | TextSelectionRange = 'TextRange(0, 0)'
+ |  |  | IsEditable = 'true'
+ |  |  | ImeAction = 'Default'
+ |  |  | Focused = 'false'
+ |  |  | Text = '[Buscar tecnología…]'
+ |  |  | Actions = [GetTextLayoutResult, SetText, InsertTextAtCursor, SetSelection, PerformImeAction, OnClick, OnLongClick, PasteText, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution]
+ |  |  | MergeDescendants = 'true'
+ |  |  |-Node #537 at (l=35.0, t=316.0, r=1236.0, b=400.0)px
+ |  |  | IsTraversalGroup = 'true'
+ |  |  | HorizontalScrollAxisRange = 'ScrollAxisRange(value=0.0, maxValue=0.0, reverseScrolling=false)'
+ |  |  | CollectionInfo = 'androidx.compose.ui.semantics.CollectionInfo@b6abd43'
+ |  |  | Actions = [ScrollBy, ScrollByOffset, IndexForKey, ScrollToIndex, GetScrollViewportLength]
+ |  |  |  |-Node #539 at (l=35.0, t=330.0, r=167.0, b=386.0)px
+ |  |  |  | Focused = 'false'
+ |  |  |  | Selected = 'true'
+ |  |  |  | Role = 'Checkbox'
+ |  |  |  | Text = '[Todos]'
+ |  |  |  | Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |  |  |  | MergeDescendants = 'true'
+ |  |  |  |-Node #544 at (l=181.0, t=330.0, r=354.0, b=386.0)px
+ |  |  |  | Focused = 'false'
+ |  |  |  | Selected = 'false'
+ |  |  |  | Role = 'Checkbox'
+ |  |  |  | Text = '[Celulares]'
+ |  |  |  | Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |  |  |  | MergeDescendants = 'true'
+ |  |  |  |-Node #549 at (l=368.0, t=330.0, r=525.0, b=386.0)px
+ |  |  |  | Focused = 'false'
+ |  |  |  | Selected = 'false'
+ |  |  |  | Role = 'Checkbox'
+ |  |  |  | Text = '[Laptops]'
+ |  |  |  | Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |  |  |  | MergeDescendants = 'true'
+ |  |  |  |-Node #554 at (l=539.0, t=330.0, r=711.0, b=386.0)px
+ |  |  |  | Focused = 'false'
+ |  |  |  | Selected = 'false'
+ |  |  |  | Role = 'Checkbox'
+ |  |  |  | Text = '[Consolas]'
+ |  |  |  | Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |  |  |  | MergeDescendants = 'true'
+ |  |  |  |-Node #559 at (l=725.0, t=330.0, r=853.0, b=386.0)px
+ |  |  |  | Focused = 'false'
+ |  |  |  | Selected = 'false'
+ |  |  |  | Role = 'Checkbox'
+ |  |  |  | Text = '[Audio]'
+ |  |  |  | Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |  |  |  | MergeDescendants = 'true'
+ |  |  |  |-Node #564 at (l=867.0, t=330.0, r=1014.0, b=386.0)px
+ |  |  |  | Focused = 'false'
+ |  |  |  | Selected = 'false'
+ |  |  |  | Role = 'Checkbox'
+ |  |  |  | Text = '[Tablets]'
+ |  |  |  | Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |  |  |  | MergeDescendants = 'true'
+ |  |  |  |-Node #569 at (l=1028.0, t=330.0, r=1236.0, b=386.0)px
+ |  |  |    Focused = 'false'
+ |  |  |    Selected = 'false'
+ |  |  |    Role = 'Checkbox'
+ |  |  |    Text = '[Videojuegos]'
+ |  |  |    Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |  |  |    MergeDescendants = 'true'
+ |  |  |-Node #574 at (l=35.0, t=425.0, r=1376.0, b=709.0)px
+ |  |    IsTraversalGroup = 'true'
+ |  |     |-Node #577 at (l=70.0, t=460.0, r=561.0, b=508.0)px
+ |  |     | Text = '[Intercambia, no acumules]'
+ |  |     | Actions = [SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |  |     |-Node #578 at (l=70.0, t=526.0, r=877.0, b=572.0)px
+ |  |     | Text = '[Publica lo que ya no usas y encuentra tu próximo equipo.]'
+ |  |     | Actions = [SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |  |     |-Node #579 at (l=70.0, t=597.0, r=460.0, b=667.0)px
+ |  |       Focused = 'false'
+ |  |       Role = 'Button'
+ |  |       Text = '[ Publicar un producto]'
+ |  |       Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |  |       MergeDescendants = 'true'
+ |  |-Node #469 at (l=0.0, t=42.0, r=1411.0, b=154.0)px
+ |  | IsTraversalGroup = 'true'
+ |  |  |-Node #474 at (l=28.0, t=45.0, r=250.0, b=97.0)px
+ |  |  | Text = '[Hola, Sergio]'
+ |  |  | Actions = [SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |  |  |-Node #475 at (l=28.0, t=97.0, r=273.0, b=151.0)px
+ |  |  | Text = '[Modo demo · sin conexión]'
+ |  |  | Actions = [SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |  |  |-Node #478 at (l=1327.0, t=63.0, r=1397.0, b=133.0)px
+ |  |    Role = 'Button'
+ |  |    Focused = 'false'
+ |  |    ContentDescription = '[Publicar producto]'
+ |  |    Actions = [OnClick, RequestFocus]
+ |  |    MergeDescendants = 'true'
+ |  |-Node #483 at (l=0.0, t=496.0, r=1411.0, b=636.0)px
+ |    IsTraversalGroup = 'true'
+ |     |-Node #484 at (l=0.0, t=496.0, r=1411.0, b=636.0)px
+ |       [SelectableGroup]
+ |        |-Node #485 at (l=0.0, t=496.0, r=343.0, b=636.0)px
+ |        | Role = 'Tab'
+ |        | Focused = 'false'
+ |        | Selected = 'true'
+ |        | Text = '[Inicio]'
+ |        | Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |        | MergeDescendants = 'true'
+ |        |-Node #494 at (l=357.0, t=496.0, r=699.0, b=636.0)px
+ |        | Role = 'Tab'
+ |        | Focused = 'false'
+ |        | Selected = 'false'
+ |        | Text = '[Trueques]'
+ |        | Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |        | MergeDescendants = 'true'
+ |        |-Node #503 at (l=713.0, t=496.0, r=1055.0, b=636.0)px
+ |        | Role = 'Tab'
+ |        | Focused = 'false'
+ |        | Selected = 'false'
+ |        | Text = '[Subastas]'
+ |        | Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |        | MergeDescendants = 'true'
+ |        |-Node #512 at (l=1069.0, t=496.0, r=1411.0, b=636.0)px
+ |          Role = 'Tab'
+ |          Focused = 'false'
+ |          Selected = 'false'
+ |          Text = '[Perfil]'
+ |          Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |          MergeDescendants = 'true'
+ |-Node #460 at (l=14.0, t=636.0, r=1106.0, b=720.0)px
+   IsTraversalGroup = 'true'
+    |-Node #463 at (l=42.0, t=658.0, r=384.0, b=698.0)px
+    | Text = '[Demostración restablecida.]'
+    | Actions = [SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+    |-Node #465 at (l=971.0, t=643.0, r=1092.0, b=713.0)px
+      Focused = 'false'
+      Role = 'Button'
+      Text = '[Cerrar]'
+      Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+      MergeDescendants = 'true'
+Notice: Demostración restablecida.

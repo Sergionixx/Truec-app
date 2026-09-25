@@ -6,3 +6,12 @@ body,
 #root {
   height: 100%;
 }
+
+button:focus-visible, [role="button"]:focus-visible, a:focus-visible { outline: 3px solid #1e40af; outline-offset: 3px; }
+[hidden] { display: none !important; }
+@theme { --color-teal-600: #00796b; }
+button:disabled { opacity: .55; cursor: not-allowed; }
+html.large-text { font-size: 20px; }
+html.high-contrast { --color-slate-400: #475569; --color-slate-500: #334155; --color-teal-600: #00574b; --color-teal-700: #00463d; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+html.high-contrast header button { color: #ffffff; }

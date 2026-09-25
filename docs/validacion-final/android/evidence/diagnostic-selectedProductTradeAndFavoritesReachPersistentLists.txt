@@ -1,0 +1,73 @@
+Printing with useUnmergedTree = 'false'
+Node #583 at (l=0.0, t=42.0, r=1411.0, b=720.0)px
+ |-Node #1217 at (l=0.0, t=42.0, r=1411.0, b=636.0)px
+ | IsTraversalGroup = 'true'
+ |  |-Node #1273 at (l=0.0, t=154.0, r=1411.0, b=496.0)px, Tag: 'product-list'
+ |  | IsTraversalGroup = 'true'
+ |  | VerticalScrollAxisRange = 'ScrollAxisRange(value=0.0, maxValue=0.0, reverseScrolling=false)'
+ |  | CollectionInfo = 'androidx.compose.ui.semantics.CollectionInfo@4c1ee4b'
+ |  | Actions = [ScrollBy, ScrollByOffset, IndexForKey, ScrollToIndex, GetScrollViewportLength]
+ |  |  |-Node #1275 at (l=35.0, t=189.0, r=1376.0, b=445.0)px
+ |  |    IsTraversalGroup = 'true'
+ |  |    Focused = 'false'
+ |  |    Text = '[📱, CELULARES, iPhone 14 Pro Max, $14,200.00, Seminuevo · Trueque]'
+ |  |    Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |  |    MergeDescendants = 'true'
+ |  |-Node #1220 at (l=0.0, t=42.0, r=1411.0, b=154.0)px
+ |  | IsTraversalGroup = 'true'
+ |  |  |-Node #1223 at (l=14.0, t=63.0, r=84.0, b=133.0)px
+ |  |  | Role = 'Button'
+ |  |  | Focused = 'false'
+ |  |  | ContentDescription = '[Volver]'
+ |  |  | Actions = [OnClick, RequestFocus]
+ |  |  | MergeDescendants = 'true'
+ |  |  |-Node #1227 at (l=98.0, t=45.0, r=267.0, b=97.0)px
+ |  |  | Text = '[Favoritos]'
+ |  |  | Actions = [SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |  |  |-Node #1228 at (l=98.0, t=97.0, r=343.0, b=151.0)px
+ |  |    Text = '[Modo demo · sin conexión]'
+ |  |    Actions = [SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |  |-Node #1234 at (l=0.0, t=496.0, r=1411.0, b=636.0)px
+ |    IsTraversalGroup = 'true'
+ |     |-Node #1235 at (l=0.0, t=496.0, r=1411.0, b=636.0)px
+ |       [SelectableGroup]
+ |        |-Node #1236 at (l=0.0, t=496.0, r=343.0, b=636.0)px
+ |        | Role = 'Tab'
+ |        | Focused = 'false'
+ |        | Selected = 'false'
+ |        | Text = '[Inicio]'
+ |        | Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |        | MergeDescendants = 'true'
+ |        |-Node #1245 at (l=357.0, t=496.0, r=699.0, b=636.0)px
+ |        | Role = 'Tab'
+ |        | Focused = 'false'
+ |        | Selected = 'false'
+ |        | Text = '[Trueques]'
+ |        | Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |        | MergeDescendants = 'true'
+ |        |-Node #1254 at (l=713.0, t=496.0, r=1055.0, b=636.0)px
+ |        | Role = 'Tab'
+ |        | Focused = 'false'
+ |        | Selected = 'false'
+ |        | Text = '[Subastas]'
+ |        | Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |        | MergeDescendants = 'true'
+ |        |-Node #1263 at (l=1069.0, t=496.0, r=1411.0, b=636.0)px
+ |          Role = 'Tab'
+ |          Focused = 'false'
+ |          Selected = 'true'
+ |          Text = '[Perfil]'
+ |          Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |          MergeDescendants = 'true'
+ |-Node #1032 at (l=14.0, t=636.0, r=1106.0, b=720.0)px
+   IsTraversalGroup = 'true'
+    |-Node #1035 at (l=42.0, t=658.0, r=488.0, b=698.0)px
+    | Text = '[Propuesta guardada correctamente.]'
+    | Actions = [SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+    |-Node #1037 at (l=971.0, t=643.0, r=1092.0, b=713.0)px
+      Focused = 'false'
+      Role = 'Button'
+      Text = '[Cerrar]'
+      Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+      MergeDescendants = 'true'
+Notice: Propuesta guardada correctamente.

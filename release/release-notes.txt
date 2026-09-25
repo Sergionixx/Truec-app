@@ -1,6 +1,1 @@
-Novedades de la versión 1.2.0:
-• Módulo completo de publicación de productos con fotografías y valor estimado.
-• Panel de gestión interactiva de propuestas de trueque con estados Aceptada y Rechazada.
-• Cumplimiento total de accesibilidad WCAG 2.1 AA (contraste, etiquetas de accesibilidad y soporte de teclado).
-• Arquitectura responsiva optimizada para teléfonos, tabletas y computadoras.
-• Modo autónomo con resiliencia de datos local ante fallos de conexión.
+﻿Integración de Room con la rama Victor; validación y autorización de API; subastas persistentes; accesibilidad de diálogos y teclado; simulación explícita de publicación. APK debug auténtico con checksum de sus bytes.

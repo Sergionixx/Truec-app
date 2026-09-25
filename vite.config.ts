@@ -35,10 +35,11 @@ export default defineConfig(({ mode }) => {
       strictPort: true,
       watch: { ignored: ['**/.figma/**'] },
       proxy: {
-        '/api': 'http://localhost:3001',
+        '/api': process.env.API_TARGET || 'http://127.0.0.1:3001',
       },
     },
     preview: {
+      proxy: { '/api': process.env.API_TARGET || 'http://127.0.0.1:3001' },
       host: '0.0.0.0',
       port: parseInt(process.env.PORT || '8443'),
     },

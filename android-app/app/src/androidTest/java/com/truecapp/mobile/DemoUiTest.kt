@@ -97,7 +97,8 @@ class DemoUiTest {
         waitSaved { vm.state.value.data.propuestas.any { it.deseadoId == 3L && it.ofrecidoId == 8L } }
         capture("04-propuestas")
         compose.onNodeWithText("Perfil").performClick()
-        compose.onNodeWithTag("profile-Favorites").performScrollTo().performClick()
+        compose.onNodeWithTag("profile").performScrollToNode(hasTestTag("profile-Favorites"))
+        compose.onNodeWithTag("profile-Favorites").performClick()
         waitTag("product-list")
         compose.onNodeWithText("iPhone 14 Pro Max").assertExists()
     }
@@ -135,7 +136,8 @@ class DemoUiTest {
         enter()
         compose.onNodeWithText("Subastas").performClick()
         waitTag("auction")
-        compose.onNodeWithTag("bid-amount").performScrollTo().performTextReplacement("3500")
+        compose.onNodeWithTag("auction").performScrollToNode(hasTestTag("bid-amount"))
+        compose.onNodeWithTag("bid-amount").performTextReplacement("3500")
         compose.onNodeWithText("Confirmar puja").performScrollTo().performClick()
         compose.onNodeWithText("Tu oferta debe superar", substring = true).assertExists()
         assertEquals(1, vm.state.value.data.pujas.size)

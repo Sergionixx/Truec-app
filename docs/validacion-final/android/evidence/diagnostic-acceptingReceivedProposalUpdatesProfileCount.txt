@@ -1,0 +1,94 @@
+Printing with useUnmergedTree = 'false'
+Node #1286 at (l=0.0, t=42.0, r=1411.0, b=720.0)px
+ |-Node #1580 at (l=0.0, t=42.0, r=1411.0, b=636.0)px
+ | IsTraversalGroup = 'true'
+ |  |-Node #1634 at (l=0.0, t=154.0, r=1411.0, b=496.0)px, Tag: 'profile'
+ |  | IsTraversalGroup = 'true'
+ |  | VerticalScrollAxisRange = 'ScrollAxisRange(value=0.0, maxValue=100.0, reverseScrolling=false)'
+ |  | CollectionInfo = 'androidx.compose.ui.semantics.CollectionInfo@320e864'
+ |  | Actions = [ScrollBy, ScrollByOffset, IndexForKey, ScrollToIndex, GetScrollViewportLength]
+ |  |  |-Node #1637 at (l=685.0, t=228.0, r=726.0, b=302.0)px
+ |  |  | Text = '[S]'
+ |  |  | Actions = [SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |  |  |-Node #1638 at (l=635.0, t=340.0, r=776.0, b=395.0)px
+ |  |  | Text = '[Sergio]'
+ |  |  | Actions = [SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |  |  |-Node #1639 at (l=583.0, t=395.0, r=828.0, b=441.0)px
+ |  |  | Text = '[demo@truec.app]'
+ |  |  | Actions = [SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |  |  |-Node #1642 at (l=35.0, t=469.0, r=470.0, b=610.0)px
+ |  |  | IsTraversalGroup = 'true'
+ |  |  |  |-Node #1644 at (l=239.0, t=490.0, r=266.0, b=542.0)px
+ |  |  |  | Text = '[2]'
+ |  |  |  | Actions = [SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |  |  |  |-Node #1645 at (l=201.0, t=542.0, r=305.0, b=589.0)px
+ |  |  |    Text = '[Artículos]'
+ |  |  |    Actions = [SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |  |  |-Node #1646 at (l=488.0, t=469.0, r=923.0, b=610.0)px
+ |  |  | IsTraversalGroup = 'true'
+ |  |  |  |-Node #1648 at (l=692.0, t=490.0, r=719.0, b=542.0)px
+ |  |  |  | Text = '[1]'
+ |  |  |  | Actions = [SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |  |  |  |-Node #1649 at (l=653.0, t=542.0, r=758.0, b=589.0)px
+ |  |  |    Text = '[Trueques]'
+ |  |  |    Actions = [SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |  |  |-Node #1650 at (l=941.0, t=469.0, r=1376.0, b=610.0)px
+ |  |    IsTraversalGroup = 'true'
+ |  |     |-Node #1652 at (l=1145.0, t=490.0, r=1172.0, b=542.0)px
+ |  |     | Text = '[0]'
+ |  |     | Actions = [SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |  |     |-Node #1653 at (l=1106.0, t=542.0, r=1212.0, b=589.0)px
+ |  |       Text = '[Favoritos]'
+ |  |       Actions = [SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |  |-Node #1583 at (l=0.0, t=42.0, r=1411.0, b=154.0)px
+ |  | IsTraversalGroup = 'true'
+ |  |  |-Node #1588 at (l=28.0, t=45.0, r=179.0, b=97.0)px
+ |  |  | Text = '[Mi perfil]'
+ |  |  | Actions = [SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |  |  |-Node #1589 at (l=28.0, t=97.0, r=273.0, b=151.0)px
+ |  |    Text = '[Modo demo · sin conexión]'
+ |  |    Actions = [SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |  |-Node #1595 at (l=0.0, t=496.0, r=1411.0, b=636.0)px
+ |    IsTraversalGroup = 'true'
+ |     |-Node #1596 at (l=0.0, t=496.0, r=1411.0, b=636.0)px
+ |       [SelectableGroup]
+ |        |-Node #1597 at (l=0.0, t=496.0, r=343.0, b=636.0)px
+ |        | Role = 'Tab'
+ |        | Focused = 'false'
+ |        | Selected = 'false'
+ |        | Text = '[Inicio]'
+ |        | Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |        | MergeDescendants = 'true'
+ |        |-Node #1606 at (l=357.0, t=496.0, r=699.0, b=636.0)px
+ |        | Role = 'Tab'
+ |        | Focused = 'false'
+ |        | Selected = 'false'
+ |        | Text = '[Trueques]'
+ |        | Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |        | MergeDescendants = 'true'
+ |        |-Node #1615 at (l=713.0, t=496.0, r=1055.0, b=636.0)px
+ |        | Role = 'Tab'
+ |        | Focused = 'false'
+ |        | Selected = 'false'
+ |        | Text = '[Subastas]'
+ |        | Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |        | MergeDescendants = 'true'
+ |        |-Node #1624 at (l=1069.0, t=496.0, r=1411.0, b=636.0)px
+ |          Role = 'Tab'
+ |          Focused = 'false'
+ |          Selected = 'true'
+ |          Text = '[Perfil]'
+ |          Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+ |          MergeDescendants = 'true'
+ |-Node #1572 at (l=14.0, t=636.0, r=1106.0, b=720.0)px
+   IsTraversalGroup = 'true'
+    |-Node #1575 at (l=42.0, t=658.0, r=299.0, b=698.0)px
+    | Text = '[Propuesta aceptada.]'
+    | Actions = [SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+    |-Node #1577 at (l=971.0, t=643.0, r=1092.0, b=713.0)px
+      Focused = 'false'
+      Role = 'Button'
+      Text = '[Cerrar]'
+      Actions = [OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution, ClearTextSubstitution, GetTextLayoutResult]
+      MergeDescendants = 'true'
+Notice: Propuesta aceptada.
