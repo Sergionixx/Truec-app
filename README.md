@@ -1,98 +1,174 @@
-# Truec-app — Marketplace Tecnológico Móvil y Web
+# 📱 Truec-app — Marketplace de Tecnología
 
-[![Version](https://img.shields.io/badge/Versi%C3%B3n-1.2.0_Final-teal.svg)](release/RELEASE_REPORT.md)
-[![Rúbrica](https://img.shields.io/badge/R%C3%BAbrica_Acad%C3%A9mica-100%25_Cumplida-success.svg)](DEFENSA_Y_DOCUMENTACION_FINAL.md)
-[![Accesibilidad](https://img.shields.io/badge/Accesibilidad-WCAG_2.1_AA-blue.svg)](DEFENSA_Y_DOCUMENTACION_FINAL.md)
-[![Android](https://img.shields.io/badge/Android-Jetpack_Compose-green.svg)](android-app/)
-
-Plataforma integral para comprar, subastar e intercambiar artículos tecnológicos de segunda mano impulsando la economía circular. Incluye una **aplicación web moderna, accesible y responsiva (React 19 + TypeScript + Vite)**, una **aplicación nativa en Android (Kotlin + Jetpack Compose + Material Design 3)**, una **API REST en Node.js con persistencia JSON**, soporte **PWA instalable** y **simulación oficial de publicación en Google Play Store**.
+> **¿Qué es Truec?**  
+> Una aplicación donde puedes **comprar, vender, intercambiar y subastar** gadgets y dispositivos tecnológicos de segunda mano. Pensada para promover la economía circular: darle una segunda vida a la tecnología.
 
 ---
 
-## Documentación Oficial de la Entrega Final
+## 🗂️ ¿Qué hay en este proyecto?
 
-- 📘 **[Documento Maestro de Defensa y Documentación Final](DEFENSA_Y_DOCUMENTACION_FINAL.md)**: Justificación del problema, estudio con encuesta (90.9%), arquitectura, modelo de datos y matriz de correspondencia punto por punto con la rúbrica al 100%.
-- 🎬 **[Guion y Plan de Grabación para el Video Demostrativo](GUIA_VIDEO_DEMOSTRATIVO.md)**: Guion segundo a segundo (3-5 minutos) con locución sugerida en español y acciones en pantalla para la evaluación.
-- 📦 **[Reporte de Compilación y Publicación Simulada](release/RELEASE_REPORT.md)**: Resumen de build web, manifiesto PWA, paquete APK release firmado simulado y metadatos de Google Play Console.
-- 📝 **[Registro Histórico de Mejoras Fase 1](PROPUESTAS_MEJORA.md)**: Trazabilidad de los requerimientos y propuestas integradas.
+El proyecto tiene **tres partes** que trabajan juntas:
+
+```
+Truec-app/
+├── 📂 src/              → La aplicación web (lo que ve el usuario en el navegador)
+├── 📂 server/           → El servidor (el "cerebro" que guarda y entrega los datos)
+└── 📂 android-app/      → La app para Android (abre con Android Studio)
+```
 
 ---
 
-## Ejecución Rápida del Proyecto
+## 🌐 Aplicación Web
 
-### Requisitos Previos
-- **Node.js:** Versión 20 o superior (`node -v`).
-- **Navegador web moderno:** Chrome, Edge, Firefox o Safari.
-- *(Opcional)* **Android Studio Iguana / Ladybug** para compilar la app nativa.
+Hecha con **React** y **TypeScript**. React es una librería muy popular para construir interfaces de usuario; TypeScript es como JavaScript pero con reglas más estrictas para evitar errores.
 
-### 1. Instalación de dependencias
+### Pantallas principales
+
+| Pantalla | ¿Qué hace? |
+|----------|------------|
+| **Inicio de sesión / Registro** | Permite entrar a la app o crear una cuenta nueva. Valida que el correo tenga `@` y que la contraseña cumpla requisitos mínimos |
+| **Inicio (Home)** | Muestra todos los productos disponibles con búsqueda y filtros |
+| **Detalle del producto** | Información completa del artículo, opción de hacer oferta de intercambio o puja |
+| **Publicar producto** | Formulario para vender o intercambiar tu propio dispositivo |
+| **Mis intercambios** | Gestiona las propuestas de trueque que has enviado o recibido |
+
+### Funcionalidades destacadas
+
+- 🔍 **Buscador en tiempo real** — escribe y los resultados se filtran al instante
+- 🏷️ **Filtros avanzados** — por categoría (celulares, laptops, consolas…), condición, precio máximo, solo-trueque
+- 📲 **Diseño responsivo** — se adapta a cualquier tamaño de pantalla (celular, tablet, computadora)
+- ♿ **Accesibilidad** — sigue estándares para que personas con lectores de pantalla puedan usarla
+- 💾 **Modo sin conexión** — si el servidor no responde, la app sigue funcionando con datos guardados localmente
+
+---
+
+## 🖥️ Servidor (Backend)
+
+Es un servidor hecho con **Node.js** (JavaScript del lado del servidor). Expone una **API REST**, que es básicamente una serie de "rutas" a las que la app web y la app Android le preguntan cosas o le mandan datos.
+
+### ¿Qué puede hacer el servidor?
+
+| Operación | ¿Qué significa? |
+|-----------|-----------------|
+| **POST /api/login** | Verificar usuario y contraseña |
+| **POST /api/register** | Crear cuenta nueva |
+| **GET /api/products** | Obtener la lista de productos |
+| **POST /api/products** | Publicar un producto nuevo |
+| **PATCH /api/products/:id** | Editar un producto existente |
+| **DELETE /api/products/:id** | Eliminar un producto |
+| **GET/POST /api/trades** | Ver o crear propuestas de intercambio |
+| **PATCH /api/trades/:id** | Aceptar o rechazar un intercambio |
+| **DELETE /api/trades/:id** | Eliminar una propuesta |
+
+> **CRUD** = Create, Read, Update, Delete (Crear, Leer, Actualizar, Eliminar). Es el conjunto mínimo de operaciones que toda app de datos debe tener. ✅ Truec las implementa todas.
+
+Los datos se guardan en `server/data.json` — un archivo de texto con formato JSON (una forma estructurada de guardar información).
+
+---
+
+## 📱 App Android
+
+La app de Android está hecha con **Kotlin** y **Jetpack Compose**. Kotlin es el lenguaje oficial de Android; Jetpack Compose es la forma moderna de construir interfaces sin tanto código repetitivo.
+
+Se conecta al mismo servidor de Node.js que la web. Si corres la app en el emulador, usa la dirección `10.0.2.2:3001` para comunicarse con el servidor local de tu computadora.
+
+---
+
+## 🚀 ¿Cómo correr el proyecto?
+
+### Requisitos previos
+- Tener instalado [Node.js](https://nodejs.org) (v18 o mayor)
+- Tener instalado [Android Studio](https://developer.android.com/studio) (para la app Android)
+
+### Pasos
+
 ```bash
+# 1. Clonar el repositorio
+git clone https://github.com/Sergionixx/Truec-app.git
+cd Truec-app
+
+# 2. Instalar dependencias
 npm install
-```
 
-### 2. Iniciar el servidor backend (API REST)
-```bash
-npm run api
-```
-> Disponible en `http://localhost:3001` (guarda los datos en `server/data.json`).
+# 3. Iniciar el servidor (en una terminal)
+npm run server
 
-### 3. Iniciar la aplicación web interactiva
-En una segunda terminal:
-```bash
+# 4. Iniciar la app web (en otra terminal)
 npm run dev
 ```
-> Abrir en el navegador: **`http://localhost:8443`**
 
-### 4. Simular compilación de release y empaquetado de APK
+Luego abre tu navegador en `http://localhost:5173`
+
+### Usuario de prueba
+```
+Correo:     demo@truec.app
+Contraseña: demo123
+```
+
+---
+
+## 🔒 Seguridad y validaciones
+
+La app valida los datos **antes** de enviarlos al servidor y también **dentro** del servidor. Algunos ejemplos:
+
+- El correo electrónico debe contener `@` y tener formato válido (ej: `usuario@dominio.com`)
+- La contraseña debe tener al menos 6 caracteres
+- Si el correo ya existe al registrarse, se muestra un mensaje claro de error
+- Si el correo o contraseña son incorrectos al iniciar sesión, el mensaje no revela cuál de los dos falló (por seguridad)
+
+---
+
+## ♿ Accesibilidad
+
+- Todos los botones tienen etiquetas descriptivas para lectores de pantalla
+- Los colores tienen suficiente contraste (estándar WCAG AA)
+- Las notificaciones ("toasts") usan `aria-live` para anunciarse automáticamente
+- La app funciona con teclado (sin necesidad de ratón)
+
+---
+
+## 📦 Simulación de publicación en Google Play
+
+Dentro de la carpeta `release/` encontrarás:
+
+| Archivo | ¿Qué es? |
+|---------|----------|
+| `Truec-app-v1.2.0-release.apk` | El instalador simulado de la app Android |
+| `Truec-app-v1.2.0-release.apk.sha256` | Firma de seguridad del archivo (para verificar que no fue alterado) |
+| `google-play-metadata.json` | Metadatos que se subirían a Google Play (nombre, descripción, categoría…) |
+| `RELEASE_REPORT.md` | Reporte del proceso de empaquetado |
+
+Para simular el proceso completo ejecuta:
 ```bash
 npm run simulate:release
 ```
-> Ejecuta la verificación de build de producción, genera los hashes criptográficos SHA-256, crea el paquete APK release simulado y los metadatos para Google Play Store en la carpeta `release/`.
 
 ---
 
-## Credenciales de Demostración para Evaluadores
+## 📄 Documentación académica
 
-- **Correo electrónico:** `demo@truec.app`
-- **Contraseña:** `demo123`
-*(En la pantalla de inicio de sesión se incluye un botón de acceso rápido para autocompletar estas credenciales).*
-
----
-
-## Resumen de Cumplimiento de la Rúbrica (100%)
-
-| Criterio | Ponderación | Estado | Implementación Clave |
-|---|---|---|---|
-| **1. Funcionalidad e Integración de Datos** | **25%** | **100% Cumplido** | API REST Node.js completa (`/api/products`, `/api/trades`, `/api/auctions/1/bids`), publicación de productos con imágenes, gestión interactiva de trueques (Aceptar/Rechazar) y capa cliente resiliente con almacenamiento offline (`localStorage`). |
-| **2. Optimización UX/UI** | **20%** | **100% Cumplido** | Sistema visual Material Design 3 / HIG, paleta oficial (Teal, Navy, Ámbar), selector de modos de visualización (Teléfono, Pantalla Completa, Canvas Figma), sistema de notificaciones toast animadas, favoritos con corazón y diálogos de confirmación. |
-| **3. Accesibilidad y Adaptación a Dispositivos** | **20%** | **100% Cumplido** | Conforme con WCAG 2.1 Nivel AA: relación de contraste superior a 4.5:1, etiquetas `aria-label` en el 100% de controles, navegación por teclado completa (`focus-visible`), áreas táctiles de 44px+ y diseño fluido adaptable a cualquier resolución. |
-| **4. Documentación y Justificación** | **20%** | **100% Cumplido** | Documento académico maestro (`DEFENSA_Y_DOCUMENTACION_FINAL.md`), justificación basada en encuesta con 90.9% de preferencia, diagramas de arquitectura Mermaid y guion técnico cronometrado (`GUIA_VIDEO_DEMOSTRATIVO.md`). |
-| **5. Demostración y Simulación de Publicación** | **15%** | **100% Cumplido** | PWA instalable con `manifest.json`, simulador navegable de ficha en Google Play Store con proceso de descarga/instalación interactivo, script automatizado de release (`npm run simulate:release`) y paquete APK en `release/`. |
-| **TOTAL** | **100%** | **Excelente** | **Proyecto completo, integrado y listo para evaluación y defensa.** |
+| Archivo | Contenido |
+|---------|-----------|
+| `DEFENSA_Y_DOCUMENTACION_FINAL.md` | Documento completo de defensa: arquitectura, decisiones de diseño, pruebas, rúbrica |
+| `GUIA_VIDEO_DEMOSTRATIVO.md` | Script cronometrado para grabar el video demostrativo |
 
 ---
 
-## Endpoints de la API REST
+## 🧱 Tecnologías usadas
 
-| Método | Endpoint | Descripción |
-|---|---|---|
-| `GET` | `/api/health` | Estado de salud del servicio y versión activa. |
-| `POST` | `/api/login` | Autenticación de usuarios y emisión de token demo. |
-| `GET` | `/api/products?category=...&search=...` | Listar catálogo con filtros por categoría y búsqueda en tiempo real. |
-| `POST` | `/api/products` | Publicar un nuevo artículo con categoría, precio, estado y fotos. |
-| `GET` | `/api/trades` | Consultar el listado de propuestas de trueque registradas. |
-| `POST` | `/api/trades` | Crear una nueva propuesta de trueque contrastando artículos. |
-| `PATCH` | `/api/trades/:id` | Actualizar el estado de una propuesta (`accepted`, `rejected`, `pending`). |
-| `GET` | `/api/auctions/:id/bids` | Consultar el historial de pujas ordenado de mayor a menor. |
-| `POST` | `/api/auctions/:id/bids` | Registrar una nueva puja validando que supere a la oferta líder. |
-| `POST` | `/api/reset` | Restablecer la base de datos a sus valores iniciales para demostraciones. |
+| Tecnología | ¿Para qué? |
+|------------|------------|
+| React 19 | Construcción de la interfaz web |
+| TypeScript | Tipado estático (menos errores en tiempo de desarrollo) |
+| Vite | Servidor de desarrollo rápido y empaquetado |
+| Node.js | Servidor backend / API REST |
+| Kotlin + Jetpack Compose | App nativa Android |
+| localStorage | Almacenamiento local para modo offline |
+| PWA (manifest.json) | Permite instalar la web como si fuera una app |
 
 ---
 
-## Abrir en Android Studio
+## 👥 Equipo
 
-1. Abre Android Studio y selecciona **Open**.
-2. Selecciona la subcarpeta `android-app` de este repositorio.
-3. Espera a que finalice Gradle Sync (SDK 36, Kotlin 2.0).
-4. Asegúrate de tener el backend corriendo con `npm run api`.
-5. Ejecuta la aplicación en un emulador o dispositivo físico Android (utiliza `adb reverse tcp:3001 tcp:3001` para conectar el teléfono físico con la API local de tu computadora).
+Proyecto académico desarrollado como entrega final.  
+Repositorio: [github.com/Sergionixx/Truec-app](https://github.com/Sergionixx/Truec-app) — rama `Victor`
