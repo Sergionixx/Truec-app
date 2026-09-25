@@ -1,0 +1,29 @@
+{
+  "name": "Truec-app: Marketplace Tech",
+  "short_name": "Truec-app",
+  "description": "Compra, subasta e intercambia tecnología de segunda mano de forma segura, económica y sostenible.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F8FAFC",
+  "theme_color": "#00897B",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["shopping", "productivity", "utilities"],
+  "lang": "es-MX",
+  "screenshots": [
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "form_factor": "narrow",
+      "label": "Catálogo de Trueques y Subastas Tech"
+    }
+  ]
+}

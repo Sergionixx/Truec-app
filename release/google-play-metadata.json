@@ -1,0 +1,29 @@
+{
+  "appDetails": {
+    "title": "Truec-app: Marketplace Tech",
+    "shortDescription": "Compra, subasta e intercambia tecnología de segunda mano de forma segura y accesible.",
+    "fullDescription": "Truec-app es la plataforma líder para la economía circular de productos tecnológicos. Diseñada para estudiantes, profesionales y amantes de los gadgets, permite intercambiar celulares, laptops, consolas y accesorios de forma transparente con reputación de usuarios verificada, subastas en vivo con cronómetro y catálogo organizado por categorías.",
+    "category": "SHOPPING",
+    "contentRating": "PEGI 3 / Para todos",
+    "defaultLanguage": "es-419"
+  },
+  "releaseInfo": {
+    "track": "production",
+    "versionName": "1.2.0",
+    "versionCode": 12,
+    "packageName": "com.truecapp.mobile",
+    "minSdkVersion": 24,
+    "targetSdkVersion": 36,
+    "releaseDate": "2026-09-23",
+    "sha256": "4e545a90f1ffe9023b73b1ee0b5f9d120e30c380ca87b1940616136207dcbe13",
+    "permissions": [
+      "android.permission.INTERNET",
+      "android.permission.ACCESS_NETWORK_STATE"
+    ],
+    "privacyPolicyUrl": "https://truec.app/privacy-policy",
+    "developerEmail": "contacto@truec.app"
+  },
+  "releaseNotes": {
+    "es-419": "Novedades de la versión 1.2.0:\n• Módulo completo de publicación de productos con fotografías y valor estimado.\n• Panel de gestión interactiva de propuestas de trueque con estados Aceptada y Rechazada.\n• Cumplimiento total de accesibilidad WCAG 2.1 AA (contraste, etiquetas de accesibilidad y soporte de teclado).\n• Arquitectura responsiva optimizada para teléfonos, tabletas y computadoras.\n• Modo autónomo con resiliencia de datos local ante fallos de conexión."
+  }
+}

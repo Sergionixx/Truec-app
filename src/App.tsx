@@ -1,8 +1,14 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useId } from "react";
+import { NavTab, ViewMode, Product, ToastNotification, User, AuctionItem } from "./types";
+import { ApiService } from "./services/api";
+import { ToastContainer } from "./components/Toast";
+import { PublishProductModal } from "./components/PublishProductModal";
+import { TradesManagerModal } from "./components/TradesManagerModal";
+import { PlayStoreModal } from "./components/PlayStoreModal";
+import { EvaluatorGuideModal } from "./components/EvaluatorGuideModal";
+import { DeviceToolbar } from "./components/DeviceToolbar";
 
-type NavTab = "inicio" | "trueques" | "subastas" | "perfil";
-
-// ─── Palette ────────────────────────────────────────────────────────────────
+// ─── Color Tokens ────────────────────────────────────────────────────────────
 const C = {
   teal: "#00897B",
   tealLight: "#E0F2F1",
@@ -19,467 +25,979 @@ const C = {
   danger: "#EF4444",
 };
 
-// ─── Shared shell ────────────────────────────────────────────────────────────
-function MobileShell({ children }: { children: React.ReactNode }) {
+// ─── Shared Mobile Shell ─────────────────────────────────────────────────────
+function DeviceFrame({
+  children,
+  viewMode,
+}: {
+  children: React.ReactNode;
+  viewMode: ViewMode;
+}) {
+  if (viewMode === "fullscreen") {
+    return (
+      <div className="w-full min-h-screen bg-slate-50 flex justify-center">
+        <main className="w-full max-w-2xl min-h-screen bg-white shadow-xl flex flex-col relative border-x border-slate-200" role="main">
+          {children}
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div
+      className="relative flex flex-col overflow-hidden bg-slate-50 transition-all duration-300"
       style={{
         width: 393,
         height: 852,
-        background: C.bg,
-        fontFamily: "'Inter', sans-serif",
-        color: C.charcoal,
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
-        position: "relative",
-        boxShadow: "0 0 80px rgba(0,0,0,.18)",
-        borderRadius: 40,
+        borderRadius: 44,
+        boxShadow: "0 25px 60px -15px rgba(0,0,0,0.3), 0 0 0 10px #1e293b",
       }}
     >
+      {/* Notch / Dynamic Island */}
+      <div className="absolute top-2.5 left-1/2 -translate-x-1/2 w-28 h-6 bg-slate-900 rounded-full z-30 pointer-events-none flex items-center justify-end px-3">
+        <div className="w-2.5 h-2.5 rounded-full bg-slate-950 border border-slate-800" />
+      </div>
       {children}
     </div>
   );
 }
 
-// ─── Status bar ─────────────────────────────────────────────────────────────
-function StatusBar({ dark = false }: { dark?: boolean }) {
-  const txt = dark ? "#fff" : C.charcoal;
-  return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "calc(env(safe-area-inset-top, 0px) + 48px) 24px 6px", flexShrink: 0 }}>
-      <span style={{ fontSize: 12, fontWeight: 600, color: txt }}>9:41</span>
-      <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
-        {[3, 4, 5].map((h) => (
-          <div key={h} style={{ width: 4, height: h, background: txt, borderRadius: 2, opacity: 0.85 }} />
-        ))}
-        <svg width="15" height="11" viewBox="0 0 15 11" fill="none">
-          <path d="M7.5 2.5C9.3 2.5 10.9 3.2 12.1 4.3L13.5 2.9C11.9 1.4 9.8.5 7.5.5S3.1 1.4 1.5 2.9L2.9 4.3C4.1 3.2 5.7 2.5 7.5 2.5Z" fill={txt} fillOpacity={0.7} />
-          <path d="M7.5 5C8.7 5 9.8 5.5 10.6 6.3L12 4.9C10.8 3.8 9.2 3 7.5 3S4.2 3.8 3 4.9L4.4 6.3C5.2 5.5 6.3 5 7.5 5Z" fill={txt} fillOpacity={0.85} />
-          <circle cx="7.5" cy="9" r="1.5" fill={txt} />
+// ─── Bottom Navigation ───────────────────────────────────────────────────────
+function BottomNav({
+  active,
+  onTab,
+  unreadTrades = 0,
+}: {
+  active: NavTab;
+  onTab: (t: NavTab) => void;
+  unreadTrades?: number;
+}) {
+  const tabs: { id: NavTab; label: string; icon: React.ReactNode; badge?: number }[] = [
+    {
+      id: "inicio",
+      label: "Inicio",
+      icon: (
+        <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" />
         </svg>
-        <svg width="25" height="12" viewBox="0 0 25 12" fill="none">
-          <rect x="0.5" y="0.5" width="22" height="11" rx="3.5" stroke={txt} strokeOpacity={0.35} />
-          <rect x="2" y="2" width="17" height="8" rx="2" fill={txt} />
-          <path d="M23.5 4v4a2 2 0 000-4z" fill={txt} fillOpacity={0.4} />
+      ),
+    },
+    {
+      id: "trueques",
+      label: "Trueques",
+      badge: unreadTrades,
+      icon: (
+        <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M7 16l-4-4 4-4M17 8l4 4-4 4M14 4l-4 16" />
         </svg>
-      </div>
-    </div>
-  );
-}
-
-// ─── Bottom nav ──────────────────────────────────────────────────────────────
-function BottomNav({ active, onTab }: { active: NavTab; onTab: (t: NavTab) => void }) {
-  const tabs: { id: NavTab; label: string; icon: React.ReactNode }[] = [
-    {
-      id: "inicio", label: "Inicio",
-      icon: <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /><rect x="9" y="14" width="6" height="7" rx="1" stroke="currentColor" strokeWidth="1.8" /></svg>,
+      ),
     },
     {
-      id: "trueques", label: "Trueques",
-      icon: <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M7 16l-4-4 4-4M17 8l4 4-4 4M14 4l-4 16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>,
+      id: "subastas",
+      label: "Subastas",
+      icon: (
+        <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6L12 2z" />
+        </svg>
+      ),
     },
     {
-      id: "subastas", label: "Subastas",
-      icon: <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6L12 2z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg>,
-    },
-    {
-      id: "perfil", label: "Perfil",
-      icon: <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.8" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>,
+      id: "perfil",
+      label: "Perfil",
+      icon: (
+        <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <circle cx="12" cy="8" r="4" strokeWidth="1.8" />
+          <path strokeLinecap="round" strokeWidth="1.8" d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+        </svg>
+      ),
     },
   ];
+
   return (
-    <div style={{ background: C.card, borderTop: `1px solid ${C.border}`, display: "flex", paddingBottom: 12, flexShrink: 0 }}>
+    <nav
+      className="bg-white border-t border-slate-200 flex items-center justify-around py-2 px-3 flex-shrink-0 z-20 shadow-md"
+      aria-label="Navegación principal de la aplicación"
+    >
       {tabs.map((t) => {
-        const sel = active === t.id;
+        const isSel = active === t.id;
         return (
           <button
             key={t.id}
             onClick={() => onTab(t.id)}
-            style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 10, gap: 3, background: "none", border: "none", cursor: "pointer", color: sel ? C.teal : C.muted, transition: "color .2s" }}
+            className={`flex flex-col items-center py-1 px-3 rounded-2xl relative transition-all focus:outline-none focus:ring-2 focus:ring-teal-600 ${
+              isSel ? "text-teal-700 font-bold" : "text-slate-400 hover:text-slate-600"
+            }`}
+            aria-selected={isSel}
+            role="tab"
+            aria-label={`Ir a pestaña ${t.label}`}
           >
-            {t.icon}
-            <span style={{ fontSize: 10, fontWeight: sel ? 600 : 400 }}>{t.label}</span>
-            {sel && <div style={{ width: 4, height: 4, borderRadius: "50%", background: C.teal, marginTop: -1 }} />}
+            <div className="relative">
+              {t.icon}
+              {Boolean(t.badge && t.badge > 0) && (
+                <span className="absolute -top-1 -right-2 bg-rose-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-white">
+                  {t.badge}
+                </span>
+              )}
+            </div>
+            <span className="text-[10px] mt-0.5">{t.label}</span>
+            {isSel && <div className="w-1 h-1 rounded-full bg-teal-600 mt-0.5" />}
           </button>
         );
       })}
-    </div>
+    </nav>
   );
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SCREEN 1 — Login
 // ═══════════════════════════════════════════════════════════════════════════════
-function LoginScreen({ onLogin }: { onLogin: () => void }) {
-  const [email, setEmail] = useState("");
-  const [pass, setPass] = useState("");
-  const [focusedEmail, setFocusedEmail] = useState(false);
-  const [focusedPass, setFocusedPass] = useState(false);
+function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user: User) => void }) {
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("demo@truec.app");
+  const [pass, setPass] = useState("demo123");
+  const [confirmPass, setConfirmPass] = useState("");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const nameId = useId();
+  const emailId = useId();
+  const passId = useId();
+  const confirmPassId = useId();
 
-  async function submitLogin() {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setError("");
-    try {
-      const response = await fetch("/api/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password: pass }) });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error);
-      localStorage.setItem("truec-session", JSON.stringify(result));
-      onLogin();
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "No fue posible iniciar sesión");
+
+    // 1. Excepción de Validación de Correo con '@'
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      setError("Excepción de validación: El campo de correo electrónico es obligatorio.");
+      return;
     }
-  }
+    if (!trimmedEmail.includes("@")) {
+      setError("Excepción de validación: El correo debe incluir obligatoriamente el carácter '@' (ej. usuario@dominio.com).");
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      setError("Excepción de formato: El correo electrónico debe tener un dominio válido (ej. usuario@dominio.com).");
+      return;
+    }
+
+    // 2. Excepción de Validación de Contraseña
+    if (!pass || pass.length < 6) {
+      setError("Excepción de seguridad: La contraseña debe tener un mínimo de 6 caracteres.");
+      return;
+    }
+
+    // 3. Excepción de Confirmación en Registro
+    if (isRegistering) {
+      if (!name.trim() || name.trim().length < 3) {
+        setError("Excepción de validación: El nombre debe tener al menos 3 caracteres.");
+        return;
+      }
+      if (pass !== confirmPass) {
+        setError("Excepción: Las contraseñas ingresadas no coinciden.");
+        return;
+      }
+    }
+
+    setLoading(true);
+    try {
+      if (isRegistering) {
+        const res = await ApiService.register(name.trim(), trimmedEmail, pass);
+        localStorage.setItem("truec-session", JSON.stringify(res));
+        onLoginSuccess(res.user);
+      } else {
+        const res = await ApiService.login(trimmedEmail, pass);
+        localStorage.setItem("truec-session", JSON.stringify(res));
+        onLoginSuccess(res.user);
+      }
+    } catch (err: any) {
+      setError(err.message || "Excepción de autenticación: Verifique sus credenciales.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fillDemo = () => {
+    setIsRegistering(false);
+    setEmail("demo@truec.app");
+    setPass("demo123");
+    setError("");
+  };
 
   return (
-    <MobileShell>
-      <StatusBar />
-      <div style={{ flex: 1, overflowY: "auto", padding: "20px 32px 40px", display: "flex", flexDirection: "column" }}>
-        {/* Logo */}
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 32, marginBottom: 36 }}>
-          <div style={{ width: 80, height: 80, borderRadius: "50%", background: `linear-gradient(135deg, ${C.teal} 0%, ${C.navy} 100%)`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16, boxShadow: "0 8px 24px rgba(0,137,123,.3)" }}>
-            <svg width="42" height="42" fill="none" viewBox="0 0 44 44">
-              <path d="M10 22c0-6.6 5.4-12 12-12s12 5.4 12 12-5.4 12-12 12S10 28.6 10 22z" stroke="#fff" strokeWidth="2" />
-              <path d="M16 19l6-4 6 4M16 25l6 4 6-4" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M14 14l-4-4M30 14l4-4M14 30l-4 4M30 30l4 4" stroke="rgba(255,255,255,.5)" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
+    <div className="flex-1 flex flex-col justify-between p-6 overflow-y-auto bg-gradient-to-b from-white via-teal-50/20 to-slate-50">
+      <div className="my-auto py-4">
+        {/* Brand */}
+        <div className="flex flex-col items-center mb-6">
+          <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-teal-700 via-teal-600 to-navy-900 flex items-center justify-center shadow-lg shadow-teal-700/25 mb-3 p-0.5">
+            <div className="w-full h-full rounded-[22px] bg-gradient-to-tr from-teal-600 to-teal-800 flex items-center justify-center text-white text-2xl font-black">
+              T
+            </div>
           </div>
-          <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: -0.5, color: C.charcoal, margin: 0 }}>Truec-app</h1>
-          <p style={{ fontSize: 14, color: C.muted, marginTop: 6, textAlign: "center", lineHeight: 1.5 }}>
-            Compra, subasta e intercambia tecnología
+          <h1 className="text-xl font-black text-slate-800 tracking-tight">Truec-app</h1>
+          <p className="text-xs text-slate-500 mt-0.5 text-center font-medium">
+            Autenticación segura para compra, subasta y trueque
           </p>
         </div>
 
-        {/* Fields */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <div>
-            <label style={{ fontSize: 12, fontWeight: 500, color: focusedEmail ? C.teal : C.muted, display: "block", marginBottom: 6 }}>Correo electrónico</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onFocus={() => setFocusedEmail(true)}
-              onBlur={() => setFocusedEmail(false)}
-              placeholder="tu@correo.com"
-              style={{ width: "100%", padding: "14px 16px", border: `2px solid ${focusedEmail ? C.teal : C.border}`, borderRadius: 12, fontSize: 15, background: C.card, color: C.charcoal, outline: "none", transition: "border-color .2s", boxSizing: "border-box" }}
-            />
-          </div>
-          <div>
-            <label style={{ fontSize: 12, fontWeight: 500, color: focusedPass ? C.teal : C.muted, display: "block", marginBottom: 6 }}>Contraseña</label>
-            <input
-              type="password"
-              value={pass}
-              onChange={(e) => setPass(e.target.value)}
-              onFocus={() => setFocusedPass(true)}
-              onBlur={() => setFocusedPass(false)}
-              placeholder="••••••••"
-              style={{ width: "100%", padding: "14px 16px", border: `2px solid ${focusedPass ? C.teal : C.border}`, borderRadius: 12, fontSize: 15, background: C.card, color: C.charcoal, outline: "none", transition: "border-color .2s", boxSizing: "border-box" }}
-            />
-          </div>
-
-          <div style={{ textAlign: "right" }}>
-            <button style={{ background: "none", border: "none", color: C.navy, fontSize: 13, fontWeight: 500, cursor: "pointer", textDecoration: "underline" }}>
-              ¿Olvidaste tu contraseña?
-            </button>
-          </div>
-
+        {/* Auth Mode Tabs */}
+        <div className="flex bg-slate-100 p-1 rounded-2xl mb-4 border border-slate-200" role="tablist">
           <button
-            onClick={submitLogin}
-            style={{ width: "100%", padding: "16px", background: `linear-gradient(135deg, ${C.teal} 0%, ${C.tealDark} 100%)`, color: "#fff", border: "none", borderRadius: 14, fontSize: 16, fontWeight: 700, cursor: "pointer", marginTop: 8, boxShadow: "0 4px 16px rgba(0,137,123,.35)", letterSpacing: 0.3 }}
+            type="button"
+            role="tab"
+            aria-selected={!isRegistering}
+            onClick={() => { setIsRegistering(false); setError(""); }}
+            className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
+              !isRegistering ? "bg-white text-teal-700 shadow-sm" : "text-slate-500 hover:text-slate-800"
+            }`}
           >
             Iniciar Sesión
           </button>
-          {error && <div role="alert" style={{ color: C.danger, fontSize: 12, textAlign: "center" }}>{error}</div>}
-        </div>
-
-        <div style={{ marginTop: 32, textAlign: "center" }}>
-          <span style={{ fontSize: 14, color: C.muted }}>¿Nuevo por aquí?{" "}</span>
-          <button style={{ background: "none", border: "none", color: C.teal, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
-            Crear una cuenta nueva
+          <button
+            type="button"
+            role="tab"
+            aria-selected={isRegistering}
+            onClick={() => { setIsRegistering(true); setError(""); }}
+            className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
+              isRegistering ? "bg-white text-teal-700 shadow-sm" : "text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            Crear Cuenta
           </button>
         </div>
 
-        {/* Divider */}
-        <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "28px 0" }}>
-          <div style={{ flex: 1, height: 1, background: C.border }} />
-          <span style={{ fontSize: 12, color: C.muted }}>o continúa con</span>
-          <div style={{ flex: 1, height: 1, background: C.border }} />
-        </div>
+        {/* Login / Register Form */}
+        <form onSubmit={handleSubmit} className="bg-white p-5 rounded-3xl shadow-sm border border-slate-200/80 space-y-3.5">
+          {isRegistering && (
+            <div>
+              <label htmlFor={nameId} className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                Nombre Completo *
+              </label>
+              <input
+                id={nameId}
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder=""
+                required
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium focus:ring-2 focus:ring-teal-600/20 focus:border-teal-600 outline-none transition-all"
+              />
+            </div>
+          )}
 
-        <div style={{ display: "flex", gap: 12 }}>
-          {["Google", "Apple"].map((p) => (
-            <button key={p} style={{ flex: 1, padding: "12px", border: `1.5px solid ${C.border}`, borderRadius: 12, background: C.card, fontSize: 14, fontWeight: 500, color: C.charcoal, cursor: "pointer" }}>
-              {p === "Google" ? "G " : "🍎 "}{p}
+          <div>
+            <label htmlFor={emailId} className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+              Correo Electrónico (Debe incluir '@') *
+            </label>
+            <input
+              id={emailId}
+              type="text"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="tu@correo.com"
+              required
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium focus:ring-2 focus:ring-teal-600/20 focus:border-teal-600 outline-none transition-all"
+            />
+          </div>
+
+          <div>
+            <div className="flex justify-between items-center mb-1">
+              <label htmlFor={passId} className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                Contraseña (Mín. 6 caracteres) *
+              </label>
+              {!isRegistering && (
+                <button
+                  type="button"
+                  className="text-[10px] text-teal-700 font-semibold hover:underline"
+                  onClick={() => setError("Para la evaluación académica utiliza la contraseña demo: demo123")}
+                >
+                  ¿Olvidaste tu contraseña?
+                </button>
+              )}
+            </div>
+            <input
+              id={passId}
+              type="password"
+              value={pass}
+              onChange={(e) => setPass(e.target.value)}
+              placeholder="••••••••"
+              required
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium focus:ring-2 focus:ring-teal-600/20 focus:border-teal-600 outline-none transition-all"
+            />
+          </div>
+
+          {isRegistering && (
+            <div>
+              <label htmlFor={confirmPassId} className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                Confirmar Contraseña *
+              </label>
+              <input
+                id={confirmPassId}
+                type="password"
+                value={confirmPass}
+                onChange={(e) => setConfirmPass(e.target.value)}
+                placeholder="••••••••"
+                required
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium focus:ring-2 focus:ring-teal-600/20 focus:border-teal-600 outline-none transition-all"
+              />
+            </div>
+          )}
+
+          {/* Banner de Excepciones y Errores */}
+          {error && (
+            <div
+              role="alert"
+              className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-[11px] font-semibold text-rose-700 leading-tight"
+            >
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 px-4 rounded-xl bg-teal-600 text-white font-bold text-xs hover:bg-teal-700 transition-all shadow-md shadow-teal-600/25 flex items-center justify-center gap-2 focus:ring-2 focus:ring-teal-700 outline-none disabled:opacity-50"
+          >
+            {loading ? (
+              <span className="flex items-center gap-2">
+                <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Procesando...
+              </span>
+            ) : isRegistering ? (
+              "Registrar Cuenta"
+            ) : (
+              "Iniciar Sesión"
+            )}
+          </button>
+        </form>
+
+        {/* Demo Fast Access */}
+        {!isRegistering && (
+          <div className="mt-3 text-center">
+            <button
+              type="button"
+              onClick={fillDemo}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-teal-50 border border-teal-200 text-teal-800 text-[11px] font-bold hover:bg-teal-100 transition-colors"
+            >
+              <span>Autocompletar cuenta demo (demo@truec.app)</span>
             </button>
-          ))}
-        </div>
+          </div>
+        )}
       </div>
-    </MobileShell>
+
+      <div className="text-center text-[10px] text-slate-400 py-1">
+        <span>Evaluación Académica · Truec-app 2026</span>
+      </div>
+    </div>
   );
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SCREEN 2 — Home Catalog
+// SCREEN 2 — Catalog Home (No favorites/stars on product cards)
 // ═══════════════════════════════════════════════════════════════════════════════
-const PRODUCTS = [
-  { id: 1, name: "PlayStation 5 Digital", price: "$8,500", cond: "Excelente estado", barter: true, img: "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=300&h=300&fit=crop&auto=format", cat: "Consolas" },
-  { id: 2, name: "MacBook Air M2", price: "$19,900", cond: "Como nuevo", barter: false, img: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=300&h=300&fit=crop&auto=format", cat: "Laptops" },
-  { id: 3, name: "iPhone 14 Pro Max", price: "$14,200", cond: "Seminuevo", barter: true, img: "https://images.unsplash.com/photo-1592286927505-1def25115558?w=300&h=300&fit=crop&auto=format", cat: "Celulares" },
-  { id: 4, name: "Nintendo Switch OLED", price: "$5,800", cond: "Buen estado", barter: true, img: "https://images.unsplash.com/photo-1617096200347-cb04ae810b1d?w=300&h=300&fit=crop&auto=format", cat: "Consolas" },
-  { id: 5, name: "Samsung Galaxy S23", price: "$11,500", cond: "Como nuevo", barter: false, img: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=300&h=300&fit=crop&auto=format", cat: "Celulares" },
-  { id: 6, name: "Call of Duty MW3", price: "$950", cond: "Buen estado", barter: true, img: "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=300&h=300&fit=crop&auto=format", cat: "Videojuegos" },
-];
+function HomeScreen({
+  currentUser,
+  onSelectProduct,
+  onOpenPublish,
+  onTab,
+  showToast,
+}: {
+  currentUser: User | null;
+  onSelectProduct: (p: Product) => void;
+  onOpenPublish: () => void;
+  onTab: (t: NavTab) => void;
+  showToast: (msg: string, type: "success" | "error" | "info" | "warning") => void;
+}) {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [activeCategory, setActiveCategory] = useState("Todos");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [onlyBarter, setOnlyBarter] = useState(false);
+  const [selectedCondition, setSelectedCondition] = useState("Todas");
+  const [maxPrice, setMaxPrice] = useState<number>(0);
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-const CHIPS = ["Todos", "Celulares", "Laptops", "Consolas", "Videojuegos"];
+  const categories = ["Todos", "Celulares", "Laptops", "Consolas", "Audio", "Videojuegos"];
+  const conditions = ["Todas", "Excelente estado", "Como nuevo", "Seminuevo", "Buen estado"];
 
-function HomeScreen({ onProduct, onNav }: { onProduct: () => void; onNav: (t: NavTab) => void }) {
-  const [activeChip, setActiveChip] = useState("Todos");
-  const filtered = activeChip === "Todos" ? PRODUCTS : PRODUCTS.filter((p) => p.cat === activeChip);
+  useEffect(() => {
+    loadProducts();
+  }, [activeCategory, searchQuery]);
+
+  const loadProducts = async () => {
+    setLoading(true);
+    try {
+      const data = await ApiService.getProducts(activeCategory, searchQuery);
+      setProducts(data);
+    } catch {
+      showToast("Error al cargar catálogo", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Filtrado reactivo en cliente (categoría, búsqueda, trueque, precio y condición)
+  const filteredProducts = products.filter((p) => {
+    if (onlyBarter && !p.acceptsBarter) return false;
+    if (selectedCondition !== "Todas" && p.condition !== selectedCondition) return false;
+    if (maxPrice > 0 && p.price > maxPrice) return false;
+    return true;
+  });
+
+  const activeFiltersCount = (onlyBarter ? 1 : 0) + (selectedCondition !== "Todas" ? 1 : 0) + (maxPrice > 0 ? 1 : 0);
+
+  const clearAllFilters = () => {
+    setActiveCategory("Todos");
+    setSearchQuery("");
+    setOnlyBarter(false);
+    setSelectedCondition("Todas");
+    setMaxPrice(0);
+  };
+
+  const displayName = currentUser?.name || "Sergio";
 
   return (
-    <MobileShell>
-      <StatusBar />
-      {/* App bar */}
-      <div style={{ padding: "8px 16px 12px", background: C.card, borderBottom: `1px solid ${C.border}`, flexShrink: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ width: 32, height: 32, borderRadius: "50%", background: `linear-gradient(135deg, ${C.teal}, ${C.navy})`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ color: "#fff", fontSize: 14, fontWeight: 800 }}>T</span>
+    <div className="flex-1 flex flex-col overflow-hidden bg-slate-50">
+      {/* Header Search Bar & Filter Controls */}
+      <div className="px-5 pt-3 pb-3 bg-white border-b border-slate-200/80 flex-shrink-0 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-full bg-teal-600 text-white font-black flex items-center justify-center text-sm shadow-sm">
+              {displayName.substring(0, 1).toUpperCase()}
+            </div>
+            <div>
+              <span className="text-xs font-semibold text-slate-400 block leading-tight">Hola, {displayName}</span>
+              <span className="text-sm font-extrabold text-slate-800 leading-tight">Catálogo y Filtros</span>
+            </div>
           </div>
-          <div style={{ flex: 1, display: "flex", alignItems: "center", background: C.bg, border: `1.5px solid ${C.border}`, borderRadius: 12, padding: "9px 14px", gap: 8 }}>
-            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" stroke={C.muted} strokeWidth="2" /><path d="M16.5 16.5L21 21" stroke={C.muted} strokeWidth="2" strokeLinecap="round" /></svg>
-            <span style={{ color: C.muted, fontSize: 14 }}>Buscar productos, marcas…</span>
-          </div>
-          <button style={{ width: 40, height: 40, borderRadius: 12, background: C.bg, border: `1.5px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-            <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M3 6h18M6 12h12M9 18h6" stroke={C.charcoal} strokeWidth="2" strokeLinecap="round" /></svg>
+          <button
+            onClick={onOpenPublish}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-teal-600 text-white text-xs font-bold shadow-md shadow-teal-600/20 hover:bg-teal-700 transition-all focus:ring-2 focus:ring-teal-600 outline-none"
+            aria-label="Publicar un nuevo producto"
+          >
+            <span>Publicar</span>
           </button>
         </div>
-        {/* Chips */}
-        <div style={{ display: "flex", gap: 8, marginTop: 10, overflowX: "auto", paddingBottom: 2 }}>
-          {CHIPS.map((c) => {
-            const sel = activeChip === c;
+
+        {/* Search Input with Filter Toggle */}
+        <div className="flex gap-2 items-center">
+          <div className="relative flex-1">
+            <span className="absolute left-3.5 top-3 text-slate-400">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </span>
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Buscar PlayStation, MacBook, iPhone..."
+              className="w-full pl-9 pr-9 py-2.5 rounded-xl bg-slate-100/90 border border-slate-200 text-xs font-medium focus:bg-white focus:ring-2 focus:ring-teal-600/20 focus:border-teal-600 outline-none transition-all"
+              aria-label="Barra de búsqueda reactiva"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 text-xs font-bold"
+                aria-label="Limpiar búsqueda"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowFilterPanel(!showFilterPanel)}
+            className={`w-10 h-10 rounded-xl border flex items-center justify-center relative transition-all focus:outline-none focus:ring-2 focus:ring-teal-600 ${
+              showFilterPanel || activeFiltersCount > 0
+                ? "bg-teal-600 border-teal-700 text-white shadow-sm"
+                : "bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200"
+            }`}
+            aria-label="Abrir panel de filtros avanzados"
+            title="Filtros avanzados de búsqueda"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+            {activeFiltersCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-white text-[9px] font-black flex items-center justify-center border-2 border-white">
+                {activeFiltersCount}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* Panel Desplegable de Filtros Avanzados */}
+        {showFilterPanel && (
+          <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl space-y-3 animate-fade-in text-xs">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-200">
+              <span className="font-bold text-slate-800 uppercase tracking-wider text-[10px]">Filtros Avanzados</span>
+              <button
+                type="button"
+                onClick={clearAllFilters}
+                className="text-[11px] text-teal-700 font-bold hover:underline"
+              >
+                Limpiar todo
+              </button>
+            </div>
+
+            {/* Filtro: Solo Trueque */}
+            <div className="flex items-center justify-between">
+              <span className="font-semibold text-slate-700">Acepta Trueque únicamente:</span>
+              <button
+                type="button"
+                onClick={() => setOnlyBarter(!onlyBarter)}
+                className={`px-3 py-1 rounded-full text-xs font-bold transition-all border ${
+                  onlyBarter ? "bg-teal-600 border-teal-700 text-white" : "bg-white border-slate-200 text-slate-600"
+                }`}
+              >
+                {onlyBarter ? "✓ Solo Trueque" : "Todos los modos"}
+              </button>
+            </div>
+
+            {/* Filtro: Condición */}
+            <div>
+              <span className="font-semibold text-slate-700 block mb-1.5">Condición del equipo:</span>
+              <div className="flex gap-1.5 overflow-x-auto pb-1">
+                {conditions.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setSelectedCondition(c)}
+                    className={`flex-shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all border ${
+                      selectedCondition === c
+                        ? "bg-slate-800 border-slate-900 text-white"
+                        : "bg-white border-slate-200 text-slate-600 hover:bg-slate-100"
+                    }`}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Filtro: Precio Máximo */}
+            <div>
+              <div className="flex justify-between text-slate-700 font-semibold mb-1">
+                <span>Precio máximo:</span>
+                <span className="text-teal-700 font-bold">
+                  {maxPrice === 0 ? "Cualquier precio" : `< $${maxPrice.toLocaleString()} MXN`}
+                </span>
+              </div>
+              <div className="flex gap-1.5">
+                {[0, 6000, 12000, 20000].map((val) => (
+                  <button
+                    key={val}
+                    type="button"
+                    onClick={() => setMaxPrice(val)}
+                    className={`flex-1 py-1 rounded-lg text-[10px] font-bold border transition-all ${
+                      maxPrice === val
+                        ? "bg-teal-600 border-teal-700 text-white"
+                        : "bg-white border-slate-200 text-slate-600"
+                    }`}
+                  >
+                    {val === 0 ? "Todos" : `< $${val / 1000}k`}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Chips Categories */}
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none" role="tablist" aria-label="Categorías de tecnología">
+          {categories.map((cat) => {
+            const isSel = activeCategory === cat;
             return (
               <button
-                key={c}
-                onClick={() => setActiveChip(c)}
-                style={{ padding: "6px 14px", borderRadius: 20, border: `1.5px solid ${sel ? C.teal : C.border}`, background: sel ? C.teal : C.card, color: sel ? "#fff" : C.charcoal, fontSize: 13, fontWeight: sel ? 600 : 400, cursor: "pointer", whiteSpace: "nowrap", transition: "all .2s" }}
+                key={cat}
+                role="tab"
+                aria-selected={isSel}
+                onClick={() => setActiveCategory(cat)}
+                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                  isSel ? "bg-teal-600 text-white shadow-sm" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                }`}
               >
-                {c}
+                {cat}
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* Grid */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "16px 12px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          {filtered.map((p) => (
-            <button
-              key={p.id}
-              onClick={onProduct}
-              style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, overflow: "hidden", cursor: "pointer", textAlign: "left", padding: 0, boxShadow: "0 2px 8px rgba(0,0,0,.06)", transition: "transform .15s" }}
-            >
-              <div style={{ position: "relative" }}>
-                <img src={p.img} alt={p.name} style={{ width: "100%", aspectRatio: "1/1", objectFit: "cover", display: "block", background: C.bg }} />
-                {p.barter && (
-                  <div style={{ position: "absolute", top: 8, left: 8, background: C.teal, color: "#fff", fontSize: 9, fontWeight: 700, padding: "3px 7px", borderRadius: 20, letterSpacing: 0.3 }}>
-                    TRUEQUE
-                  </div>
-                )}
+      {/* Product List Content */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* Circular Economy Banner */}
+        <div className="bg-teal-700 rounded-2xl p-4 text-white shadow-md flex items-center justify-between">
+          <div className="max-w-full">
+            <span className="text-[10px] font-bold text-teal-200 uppercase tracking-widest block">Economía Circular</span>
+            <h3 className="font-extrabold text-sm mt-0.5">Intercambia, no acumules</h3>
+            <p className="text-xs text-teal-100 mt-1">Dale valor a tus equipos en desuso y consigue lo que necesitas sin gastar demás.</p>
+          </div>
+        </div>
+
+        {/* Section title */}
+        <div className="flex justify-between items-center px-1">
+          <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+            {activeCategory} ({filteredProducts.length})
+          </span>
+          <span className="text-[11px] text-slate-400 font-medium">Verificados con garantía</span>
+        </div>
+
+        {/* Grid */}
+        {loading ? (
+          <div className="grid grid-cols-2 gap-3 py-8">
+            {[1, 2, 3, 4].map((n) => (
+              <div key={n} className="bg-white rounded-2xl p-3 border border-slate-200 animate-pulse space-y-2">
+                <div className="w-full aspect-square bg-slate-200 rounded-xl" />
+                <div className="h-3 bg-slate-200 rounded w-3/4" />
+                <div className="h-4 bg-slate-200 rounded w-1/2" />
               </div>
-              <div style={{ padding: "10px 10px 12px" }}>
-                <div style={{ fontSize: 12, color: C.muted, marginBottom: 2 }}>{p.cat}</div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: C.charcoal, lineHeight: 1.3, marginBottom: 6 }}>{p.name}</div>
-                <div style={{ fontSize: 15, fontWeight: 800, color: C.teal, marginBottom: 6 }}>{p.price}</div>
-                <div style={{ display: "inline-block", fontSize: 10, padding: "3px 8px", borderRadius: 20, background: C.tealLight, color: C.tealDark, fontWeight: 500 }}>
-                  {p.cond}
+            ))}
+          </div>
+        ) : filteredProducts.length === 0 ? (
+          <div className="py-16 text-center">
+            <h4 className="font-bold text-slate-700 text-sm">No encontramos productos con estos filtros</h4>
+            <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">
+              Prueba cambiando la categoría, limpiando los filtros o publica tú mismo este artículo con el botón superior.
+            </p>
+            <button
+              onClick={clearAllFilters}
+              className="mt-3 px-4 py-2 bg-teal-50 border border-teal-200 text-teal-800 font-bold text-xs rounded-full hover:bg-teal-100"
+            >
+              Restablecer todos los filtros
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            {filteredProducts.map((p) => {
+              return (
+                <article
+                  key={p.id}
+                  onClick={() => onSelectProduct(p)}
+                  className="bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group"
+                >
+                  <div className="relative aspect-square bg-slate-100 overflow-hidden">
+                    <img
+                      src={p.img}
+                      alt={p.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                    {p.acceptsBarter && (
+                      <span className="absolute top-2 left-2 bg-teal-600 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-sm tracking-wider">
+                        TRUEQUE
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="p-3 flex-1 flex flex-col justify-between">
+                    <div>
+                      <span className="text-[10px] font-bold text-teal-700 uppercase tracking-wider block mb-0.5">
+                        {p.category}
+                      </span>
+                      <h4 className="text-xs font-bold text-slate-800 line-clamp-2 leading-tight">
+                        {p.name}
+                      </h4>
+                    </div>
+
+                    <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between">
+                      <div>
+                        <span className="text-sm font-extrabold text-slate-900 block leading-none">
+                          ${p.price.toLocaleString()}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-medium">MXN</span>
+                      </div>
+                      <span className="text-[10px] font-semibold text-teal-800 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200">
+                        {p.condition.split(" ")[0]}
+                      </span>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      <BottomNav active="inicio" onTab={onTab} />
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SCREEN 3 — Product Detail (No favorites/stars in top floating bar)
+// ═══════════════════════════════════════════════════════════════════════════════
+function DetailScreen({
+  product,
+  onBack,
+  onTrade,
+  onTab,
+  showToast,
+  onDeleteProduct,
+  onEditProduct,
+}: {
+  product: Product;
+  onBack: () => void;
+  onTrade: () => void;
+  onTab: (t: NavTab) => void;
+  showToast: (msg: string, type: "success" | "error" | "info" | "warning") => void;
+  onDeleteProduct?: (id: number) => void;
+  onEditProduct?: (product: Product) => void;
+}) {
+  return (
+    <div className="flex-1 flex flex-col overflow-hidden bg-slate-50 relative">
+      {/* Top Floating App Bar */}
+      <div className="absolute top-4 inset-x-0 px-4 flex justify-between items-center z-20 pointer-events-none">
+        <button
+          onClick={onBack}
+          className="pointer-events-auto w-10 h-10 rounded-full bg-white/90 backdrop-blur-md border border-slate-200 flex items-center justify-center text-slate-700 shadow-md hover:bg-white focus:ring-2 focus:ring-teal-600 outline-none"
+          aria-label="Volver al catálogo"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Scrollable details */}
+      <div className="flex-1 overflow-y-auto pb-28">
+        {/* Hero Image */}
+        <div className="relative w-full h-72 bg-slate-200">
+          <img src={product.img} alt={product.name} className="w-full h-full object-cover" />
+          <div className="absolute bottom-3 right-3 bg-slate-900/80 text-white text-[11px] font-bold px-2.5 py-1 rounded-full">
+            1 / 3 Fotos
+          </div>
+        </div>
+
+        {/* Content body */}
+        <div className="p-5 space-y-5">
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-xs font-bold text-teal-700 uppercase tracking-widest">{product.category}</span>
+              <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
+                {product.condition}
+              </span>
+              {product.acceptsBarter && (
+                <span className="text-[10px] font-bold text-teal-800 bg-teal-100 px-2 py-0.5 rounded-full border border-teal-300">
+                  Acepta Trueque
+                </span>
+              )}
+            </div>
+            <h1 className="text-xl font-black text-slate-900 leading-snug">{product.name}</h1>
+            <div className="text-2xl font-black text-teal-700 mt-2">
+              ${product.price.toLocaleString()} <span className="text-xs font-normal text-slate-400">MXN estimado</span>
+            </div>
+          </div>
+
+          {/* Seller Card */}
+          <div className="bg-white p-4 rounded-2xl border border-slate-200 flex items-center justify-between shadow-xs">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-navy-100 text-navy-800 flex items-center justify-center font-black text-sm">
+                {product.seller?.name ? product.seller.name.substring(0, 2).toUpperCase() : "VE"}
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-sm text-slate-800">{product.seller?.name || "Vendedor Verificado"}</span>
+                  <span className="text-teal-600 text-xs" title="Vendedor verificado">✓</span>
+                </div>
+                <div className="text-xs text-slate-400">
+                  ★ {product.seller?.rating || 4.8} · {product.seller?.sales || 24} intercambios exitosos
                 </div>
               </div>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <BottomNav active="inicio" onTab={onNav} />
-    </MobileShell>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// SCREEN 3 — Product Detail
-// ═══════════════════════════════════════════════════════════════════════════════
-function DetailScreen({ onBack, onTrade, onNav }: { onBack: () => void; onTrade: () => void; onNav: (t: NavTab) => void }) {
-  const [liked, setLiked] = useState(false);
-  const [imgIdx, setImgIdx] = useState(0);
-  const imgs = [
-    "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=500&h=400&fit=crop&auto=format",
-    "https://images.unsplash.com/photo-1607853202273-797f1c22a38e?w=500&h=400&fit=crop&auto=format",
-    "https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=500&h=400&fit=crop&auto=format",
-  ];
-
-  return (
-    <MobileShell>
-      <StatusBar />
-      <div style={{ flex: 1, overflowY: "auto" }}>
-        {/* Nav bar */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "4px 16px 12px", background: "transparent", position: "absolute", top: "calc(env(safe-area-inset-top, 0px) + 72px)", left: 0, right: 0, zIndex: 10 }}>
-          <button onClick={onBack} style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(255,255,255,.9)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,.12)" }}>
-            <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" stroke={C.charcoal} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-          </button>
-          <button onClick={() => setLiked(!liked)} style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(255,255,255,.9)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,.12)" }}>
-            <svg width="20" height="20" fill={liked ? C.danger : "none"} viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09A6.07 6.07 0 0116.5 3C19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" stroke={liked ? C.danger : C.charcoal} strokeWidth="1.8" /></svg>
-          </button>
-        </div>
-
-        {/* Image carousel */}
-        <div style={{ position: "relative", height: 280, overflow: "hidden", background: "#E8EEF5" }}>
-          <img src={imgs[imgIdx]} alt="PlayStation 5" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          <div style={{ position: "absolute", bottom: 12, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 6 }}>
-            {imgs.map((_, i) => (
-              <button key={i} onClick={() => setImgIdx(i)} style={{ width: i === imgIdx ? 20 : 6, height: 6, borderRadius: 3, background: i === imgIdx ? C.teal : "rgba(255,255,255,.7)", border: "none", cursor: "pointer", transition: "all .2s" }} />
-            ))}
-          </div>
-        </div>
-
-        <div style={{ padding: "20px 20px 176px" }}>
-          {/* Header */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
-            <div style={{ flex: 1, marginRight: 12 }}>
-              <div style={{ fontSize: 11, color: C.teal, fontWeight: 600, letterSpacing: 0.5, marginBottom: 4 }}>CONSOLAS</div>
-              <h2 style={{ fontSize: 20, fontWeight: 800, color: C.charcoal, margin: 0, lineHeight: 1.2 }}>PlayStation 5 Digital Edition</h2>
             </div>
-            <div style={{ fontSize: 10, padding: "4px 10px", borderRadius: 20, background: C.amberLight, color: C.amber, fontWeight: 700, border: `1px solid ${C.amber}`, whiteSpace: "nowrap" }}>SEMINUEVO</div>
+            <span className="text-xs font-bold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-xl">Confiable</span>
           </div>
 
-          <div style={{ fontSize: 26, fontWeight: 800, color: C.teal, marginBottom: 16 }}>$8,500 <span style={{ fontSize: 14, color: C.muted, fontWeight: 400 }}>MXN</span></div>
-
-          {/* Seller card */}
-          <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 14, display: "flex", alignItems: "center", gap: 12, marginBottom: 20, boxShadow: "0 2px 8px rgba(0,0,0,.05)" }}>
-            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&h=80&fit=crop&auto=format" alt="Vendedor" style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover", background: C.bg }} />
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: C.charcoal }}>Carlos M.</div>
-              <div style={{ fontSize: 12, color: C.muted }}>Vendedor verificado · 48 ventas</div>
-            </div>
-            <div style={{ textAlign: "right" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
-                {"★★★★★".split("").map((s, i) => <span key={i} style={{ fontSize: 13, color: i < 5 ? C.amber : C.border }}>★</span>)}
-              </div>
-              <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>4.8 / 5.0</div>
-            </div>
+          {/* Description */}
+          <div>
+            <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Descripción del artículo</h3>
+            <p className="text-xs text-slate-600 leading-relaxed bg-white p-4 rounded-2xl border border-slate-200">
+              {product.description}
+            </p>
           </div>
 
-          {/* Specs */}
-          <div style={{ marginBottom: 20 }}>
-            <h3 style={{ fontSize: 15, fontWeight: 700, color: C.charcoal, marginBottom: 12 }}>Especificaciones</h3>
-            {[
-              ["Almacenamiento", "825 GB SSD personalizado"],
-              ["Procesador", "AMD Zen 2 a 3.5 GHz"],
-              ["Resolución", "Hasta 4K 120fps"],
-              ["Conectividad", "Wi-Fi 6, Bluetooth 5.1"],
-              ["Incluye", "Control DualSense + cables"],
-            ].map(([k, v]) => (
-              <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: `1px solid ${C.border}` }}>
-                <span style={{ fontSize: 13, color: C.muted, fontWeight: 500 }}>{k}</span>
-                <span style={{ fontSize: 13, color: C.charcoal, fontWeight: 600, textAlign: "right", maxWidth: "60%" }}>{v}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Fixed bottom actions */}
-      <div style={{ position: "absolute", bottom: 66, left: 0, right: 0, background: C.card, padding: "12px 16px 20px", borderTop: `1px solid ${C.border}`, display: "flex", gap: 10, boxShadow: "0 -4px 20px rgba(0,0,0,.08)" }}>
-        <button style={{ flex: 1, padding: "14px", background: C.navy, color: "#fff", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
-          Comprar ahora
-        </button>
-        <button onClick={onTrade} style={{ flex: 1, padding: "14px", background: C.teal, color: "#fff", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
-          Proponer Trueque
-        </button>
-      </div>
-      <BottomNav active="inicio" onTab={onNav} />
-    </MobileShell>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// SCREEN 4 — Trade Proposal
-// ═══════════════════════════════════════════════════════════════════════════════
-function TradeScreen({ onBack, onNav }: { onBack: () => void; onNav: (t: NavTab) => void }) {
-  const [msg, setMsg] = useState("");
-  const [sent, setSent] = useState(false);
-  const [selectedItem, setSelectedItem] = useState(0);
-  const [error, setError] = useState("");
-
-  const myItems = [
-    { name: "iPhone 12 Pro", img: "https://images.unsplash.com/photo-1605457867610-e990b283f7b0?w=120&h=120&fit=crop&auto=format", val: "$7,200 MXN" },
-    { name: "AirPods Pro 2", img: "https://images.unsplash.com/photo-1588423771073-b8903fead714?w=120&h=120&fit=crop&auto=format", val: "$3,500 MXN" },
-    { name: "iPad Air 5", img: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=120&h=120&fit=crop&auto=format", val: "$9,800 MXN" },
-  ];
-
-  async function sendTrade() {
-    setError("");
-    try {
-      const response = await fetch("/api/trades", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ wantedProductId: 1, offeredItem: myItems[selectedItem].name, message: msg }) });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error);
-      setSent(true);
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "No fue posible enviar la propuesta");
-    }
-  }
-
-  return (
-    <MobileShell>
-      <StatusBar />
-      {/* Top bar */}
-      <div style={{ display: "flex", alignItems: "center", padding: "4px 16px 14px", gap: 12, background: C.card, borderBottom: `1px solid ${C.border}`, flexShrink: 0 }}>
-        <button onClick={onBack} style={{ width: 36, height: 36, borderRadius: 10, background: C.bg, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" stroke={C.charcoal} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-        </button>
-        <h2 style={{ fontSize: 17, fontWeight: 700, color: C.charcoal, margin: 0 }}>Proponer Intercambio</h2>
-      </div>
-
-      <div style={{ flex: 1, overflowY: "auto", padding: "20px 16px 100px" }}>
-        {/* Target product */}
-        <div style={{ marginBottom: 24 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, letterSpacing: 0.5, marginBottom: 10 }}>PRODUCTO QUE QUIERES RECIBIR</div>
-          <div style={{ background: C.card, border: `1.5px solid ${C.teal}`, borderRadius: 16, padding: 14, display: "flex", gap: 14, alignItems: "center", boxShadow: "0 2px 12px rgba(0,137,123,.12)" }}>
-            <img src="https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=120&h=120&fit=crop&auto=format" alt="PS5" style={{ width: 72, height: 72, borderRadius: 12, objectFit: "cover", background: C.bg }} />
+          {/* Specifications */}
+          {product.specs && product.specs.length > 0 && (
             <div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: C.charcoal, marginBottom: 4 }}>PlayStation 5 Digital</div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: C.teal }}>$8,500 <span style={{ fontSize: 12, color: C.muted, fontWeight: 400 }}>MXN</span></div>
-              <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>de Carlos M. ★ 4.8</div>
+              <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Especificaciones técnicas</h3>
+              <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden divide-y divide-slate-100 text-xs">
+                {product.specs.map(([k, v]) => (
+                  <div key={k} className="flex justify-between p-3">
+                    <span className="text-slate-400 font-medium">{k}</span>
+                    <span className="font-semibold text-slate-800 text-right">{v}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Acciones de Edición y Eliminación */}
+          <div className="pt-2 flex gap-3">
+            <button
+              type="button"
+              onClick={() => onEditProduct?.(product)}
+              className="flex-1 py-3 px-4 rounded-2xl border border-teal-200 bg-teal-50/80 text-teal-800 text-xs font-bold hover:bg-teal-100 transition-colors flex items-center justify-center gap-2 focus:ring-2 focus:ring-teal-400 outline-none"
+              title="Editar este producto"
+            >
+              <span>Editar publicación</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm(`¿Confirmas que deseas eliminar el producto '${product.name}' del catálogo?`)) {
+                  onDeleteProduct?.(product.id);
+                }
+              }}
+              className="flex-1 py-3 px-4 rounded-2xl border border-rose-200 bg-rose-50/80 text-rose-700 text-xs font-bold hover:bg-rose-100 transition-colors flex items-center justify-center gap-2 focus:ring-2 focus:ring-rose-400 outline-none"
+              title="Eliminar este producto"
+            >
+              <span>Eliminar esta publicación</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Fixed Bottom CTA Actions */}
+      <div className="absolute bottom-14 inset-x-0 p-4 bg-white/95 backdrop-blur-md border-t border-slate-200 flex gap-3 shadow-lg z-20">
+        <button
+          onClick={() => showToast("En este prototipo académico se prioriza el trueque y subasta.", "info")}
+          className="flex-1 py-3.5 px-4 rounded-xl border-2 border-slate-300 text-slate-700 font-bold text-xs hover:bg-slate-50 transition-colors focus:ring-2 focus:ring-slate-400 outline-none"
+        >
+          Comprar Ahora
+        </button>
+        <button
+          onClick={onTrade}
+          className="flex-1 py-3.5 px-4 rounded-xl bg-teal-600 text-white font-bold text-xs hover:bg-teal-700 transition-colors shadow-md shadow-teal-600/30 flex items-center justify-center gap-1.5 focus:ring-2 focus:ring-teal-700 outline-none"
+        >
+          <span>Proponer Trueque</span>
+        </button>
+      </div>
+
+      <BottomNav active="inicio" onTab={onTab} />
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SCREEN 4 — Propose Trade
+// ═══════════════════════════════════════════════════════════════════════════════
+function TradeScreen({
+  targetProduct,
+  onBack,
+  onTab,
+  showToast,
+  onOpenTradesManager,
+}: {
+  targetProduct: Product;
+  onBack: () => void;
+  onTab: (t: NavTab) => void;
+  showToast: (msg: string, type: "success" | "error" | "info" | "warning") => void;
+  onOpenTradesManager: () => void;
+}) {
+  const inventory = [
+    { name: "iPhone 12 Pro 128GB", val: 7200, img: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&h=300&fit=crop&auto=format" },
+    { name: "AirPods Pro 2da Generación", val: 3500, img: "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=300&h=300&fit=crop&auto=format" },
+    { name: "iPad Air 5 M1 Wi-Fi 64GB", val: 9800, img: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=300&h=300&fit=crop&auto=format" },
+  ];
+
+  const [selectedIdx, setSelectedIdx] = useState(0);
+  const [message, setMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const handleSendTrade = async () => {
+    setSubmitting(true);
+    try {
+      const offered = inventory[selectedIdx];
+      await ApiService.createTrade({
+        wantedProductId: targetProduct.id,
+        wantedProductName: targetProduct.name,
+        offeredItem: offered.name,
+        offeredValue: offered.val,
+        message: message.trim() || "Hola, me interesa realizar el trueque por este artículo. Quedo atento a tu respuesta.",
+      });
+
+      showToast("¡Propuesta de trueque enviada exitosamente!", "success");
+      setShowConfirm(false);
+      onOpenTradesManager();
+    } catch (err: any) {
+      showToast(err.message || "Error al enviar la propuesta", "error");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="flex-1 flex flex-col overflow-hidden bg-slate-50">
+      {/* Top App Bar */}
+      <div className="px-5 py-3.5 bg-white border-b border-slate-200 flex items-center justify-between flex-shrink-0">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onBack}
+            className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 focus:ring-2 focus:ring-teal-600 outline-none"
+            aria-label="Volver atrás"
+          >
+            ←
+          </button>
+          <h2 className="font-extrabold text-sm text-slate-800">Proponer Intercambio</h2>
+        </div>
+        <button
+          onClick={onOpenTradesManager}
+          className="text-xs font-bold text-teal-700 bg-teal-50 px-2.5 py-1.5 rounded-xl border border-teal-200"
+        >
+          Mis Trueques
+        </button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* Step 1: Target Product */}
+        <div className="bg-white p-4 rounded-2xl border border-teal-200 shadow-xs">
+          <span className="text-[10px] font-bold text-teal-700 uppercase tracking-widest block mb-2">
+            Paso 1: Producto que recibirás
+          </span>
+          <div className="flex items-center gap-3">
+            <img src={targetProduct.img} alt={targetProduct.name} className="w-16 h-16 rounded-xl object-cover bg-slate-100" />
+            <div className="flex-1 min-w-0">
+              <h4 className="font-bold text-xs text-slate-800 line-clamp-1">{targetProduct.name}</h4>
+              <span className="text-teal-700 font-black text-sm block mt-0.5">${targetProduct.price.toLocaleString()} MXN</span>
+              <span className="text-[10px] text-slate-400">Vendedor: {targetProduct.seller?.name || "Carlos M."}</span>
             </div>
           </div>
         </div>
 
-        {/* Exchange arrow */}
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-          <div style={{ flex: 1, height: 1, background: C.border }} />
-          <div style={{ width: 36, height: 36, borderRadius: "50%", background: C.tealLight, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M7 16l-4-4 4-4M17 8l4 4-4 4" stroke={C.teal} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-          </div>
-          <div style={{ flex: 1, height: 1, background: C.border }} />
-        </div>
-
-        {/* My items selector */}
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, letterSpacing: 0.5, marginBottom: 10 }}>ELIGE UN PRODUCTO DE TU INVENTARIO</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {myItems.map((item, i) => {
-              const sel = selectedItem === i;
+        {/* Step 2: Offered Product */}
+        <div>
+          <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest block mb-2 px-1">
+            Paso 2: Elige qué artículo ofreces a cambio
+          </span>
+          <div className="space-y-2" role="radiogroup" aria-label="Inventario personal">
+            {inventory.map((item, idx) => {
+              const isSel = selectedIdx === idx;
               return (
                 <button
-                  key={i}
-                  onClick={() => setSelectedItem(i)}
-                  style={{ display: "flex", gap: 14, alignItems: "center", padding: 12, background: sel ? C.tealLight : C.card, border: `1.5px solid ${sel ? C.teal : C.border}`, borderRadius: 14, cursor: "pointer", textAlign: "left", transition: "all .2s" }}
+                  key={item.name}
+                  type="button"
+                  role="radio"
+                  aria-checked={isSel}
+                  onClick={() => setSelectedIdx(idx)}
+                  className={`w-full p-3 rounded-2xl border flex items-center justify-between text-left transition-all ${
+                    isSel ? "bg-teal-50 border-teal-600 shadow-sm" : "bg-white border-slate-200 hover:border-slate-300"
+                  }`}
                 >
-                  <img src={item.img} alt={item.name} style={{ width: 56, height: 56, borderRadius: 10, objectFit: "cover", background: C.bg }} />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: C.charcoal }}>{item.name}</div>
-                    <div style={{ fontSize: 13, color: sel ? C.tealDark : C.muted, fontWeight: 500, marginTop: 2 }}>{item.val}</div>
+                  <div className="flex items-center gap-3">
+                    <img src={item.img} alt={item.name} className="w-12 h-12 rounded-xl object-cover" />
+                    <div>
+                      <h5 className="font-bold text-xs text-slate-800">{item.name}</h5>
+                      <span className="text-slate-500 font-semibold text-[11px]">${item.val.toLocaleString()} MXN</span>
+                    </div>
                   </div>
-                  <div style={{ width: 20, height: 20, borderRadius: "50%", border: `2px solid ${sel ? C.teal : C.border}`, background: sel ? C.teal : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    {sel && <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#fff" }} />}
+                  <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${isSel ? "border-teal-600 bg-teal-600" : "border-slate-300"}`}>
+                    {isSel && <div className="w-2 h-2 rounded-full bg-white" />}
                   </div>
                 </button>
               );
@@ -487,191 +1005,882 @@ function TradeScreen({ onBack, onNav }: { onBack: () => void; onNav: (t: NavTab)
           </div>
         </div>
 
-        {/* Message */}
-        <div style={{ marginBottom: 20 }}>
-          <label style={{ fontSize: 11, fontWeight: 600, color: C.muted, letterSpacing: 0.5, display: "block", marginBottom: 8 }}>MENSAJE O CONDICIONES DE LA PROPUESTA</label>
+        {/* Step 3: Message */}
+        <div>
+          <label htmlFor="trade-msg" className="text-[10px] font-bold text-slate-600 uppercase tracking-widest block mb-1.5 px-1">
+            Paso 3: Mensaje o condiciones del trato
+          </label>
           <textarea
-            value={msg}
-            onChange={(e) => setMsg(e.target.value)}
-            placeholder="Hola, me interesa hacer el intercambio. Mi iPhone 12 Pro está en perfecto estado, con caja original y 2 forros extras. ¿Qué te parece el trato?"
-            rows={4}
-            style={{ width: "100%", padding: "14px 16px", border: `1.5px solid ${C.border}`, borderRadius: 14, fontSize: 14, color: C.charcoal, resize: "none", outline: "none", background: C.card, lineHeight: 1.5, boxSizing: "border-box", fontFamily: "inherit" }}
+            id="trade-msg"
+            rows={3}
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Hola, me interesa el trueque. Mi equipo tiene caja original y estética de 9.5/10..."
+            className="w-full p-3 rounded-2xl border border-slate-200 text-xs font-medium focus:ring-2 focus:ring-teal-600/20 focus:border-teal-600 outline-none resize-none bg-white"
           />
         </div>
 
         {/* CTA */}
         <button
-          onClick={sendTrade}
-          style={{ width: "100%", padding: "16px", background: sent ? "#22C55E" : `linear-gradient(135deg, ${C.teal} 0%, ${C.tealDark} 100%)`, color: "#fff", border: "none", borderRadius: 14, fontSize: 16, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 16px rgba(0,137,123,.3)", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+          onClick={() => setShowConfirm(true)}
+          className="w-full py-4 rounded-xl bg-teal-600 text-white font-bold text-xs hover:bg-teal-700 transition-colors shadow-lg shadow-teal-600/30 flex items-center justify-center gap-2 focus:ring-2 focus:ring-teal-700 outline-none"
         >
-          {sent ? (
-            <>
-              <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-              ¡Propuesta Enviada!
-            </>
-          ) : (
-            <>
-              <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-              Enviar Propuesta de Trueque
-            </>
-          )}
+          <span>Revisar y Enviar Propuesta</span>
         </button>
-        {error && <div role="alert" style={{ color: C.danger, fontSize: 12, textAlign: "center", marginTop: 8 }}>{error}</div>}
       </div>
-      <BottomNav active="trueques" onTab={onNav} />
-    </MobileShell>
+
+      {/* Confirmation Dialog */}
+      {showConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in" role="dialog" aria-modal="true">
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl border border-slate-200">
+            <h3 className="font-bold text-base text-slate-800">¿Confirmar propuesta de trueque?</h3>
+            <p className="text-xs text-slate-600">
+              Ofrecerás tu <strong>{inventory[selectedIdx].name}</strong> por el <strong>{targetProduct.name}</strong>. El vendedor recibirá la notificación inmediatamente.
+            </p>
+            <div className="flex gap-2 pt-2">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSendTrade}
+                disabled={submitting}
+                className="flex-1 py-2.5 rounded-xl bg-teal-600 text-white font-bold text-xs hover:bg-teal-700"
+              >
+                {submitting ? "Enviando..." : "Confirmar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <BottomNav active="trueques" onTab={onTab} />
+    </div>
   );
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SCREEN 5 — Live Auction
+// SCREEN 5 — Live Auction (with full CRUD & image URL)
 // ═══════════════════════════════════════════════════════════════════════════════
-const BIDS = [
-  { user: "carlos_mx", amount: "$3,500", time: "Hace 12 seg", avatar: "CM" },
-  { user: "techfan99", amount: "$3,300", time: "Hace 1 min", avatar: "TF" },
-  { user: "gamer_pro", amount: "$3,100", time: "Hace 3 min", avatar: "GP" },
-  { user: "electro_daniel", amount: "$2,900", time: "Hace 5 min", avatar: "ED" },
-  { user: "mx_deals", amount: "$2,700", time: "Hace 8 min", avatar: "MD" },
-];
+function AuctionScreen({
+  onTab,
+  showToast,
+}: {
+  onTab: (t: NavTab) => void;
+  showToast: (msg: string, type: "success" | "error" | "info" | "warning") => void;
+}) {
+  const [auctions, setAuctions] = useState<AuctionItem[]>([]);
+  const [selectedAuction, setSelectedAuction] = useState<AuctionItem | null>(null);
+  const [bids, setBids] = useState<any[]>([]);
+  const [timeSec, setTimeSec] = useState(5140);
+  const [bidAmount, setBidAmount] = useState("3600");
+  const [loading, setLoading] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
-function AuctionScreen({ onNav }: { onNav: (t: NavTab) => void }) {
-  const [time, setTime] = useState(5140); // 01:25:40
-  const [customBid, setCustomBid] = useState("3600");
-  const [bids, setBids] = useState(BIDS);
+  // Modal for create/edit auction
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [auctionToEdit, setAuctionToEdit] = useState<AuctionItem | null>(null);
+  const [name, setName] = useState("");
+  const [startingPrice, setStartingPrice] = useState("");
+  const [imgUrl, setImgUrl] = useState("");
+  const [description, setDescription] = useState("");
 
   useEffect(() => {
-    const t = setInterval(() => setTime((v) => Math.max(0, v - 1)), 1000);
-    return () => clearInterval(t);
+    loadAuctions();
+    const interval = setInterval(() => setTimeSec((t) => Math.max(0, t - 1)), 1000);
+    return () => clearInterval(interval);
   }, []);
 
-  const hh = String(Math.floor(time / 3600)).padStart(2, "0");
-  const mm = String(Math.floor((time % 3600) / 60)).padStart(2, "0");
-  const ss = String(time % 60).padStart(2, "0");
+  const loadAuctions = async () => {
+    try {
+      const list = await ApiService.getAuctions();
+      setAuctions(list);
+      if (list.length > 0 && !selectedAuction) {
+        setSelectedAuction(list[0]);
+        loadBids(list[0].id);
+      }
+    } catch {
+      showToast("Error al cargar subastas", "error");
+    }
+  };
 
-  async function placeBid(amt: number) {
-    const response = await fetch("/api/auctions/1/bids", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ amount: amt }) });
-    const result = await response.json();
-    if (!response.ok) return window.alert(result.error);
-    const newBid = { user: result.bid.user, amount: `$${result.bid.amount.toLocaleString()}`, time: "Ahora", avatar: "YO" };
-    setBids([newBid, ...bids]);
-    setCustomBid(String(amt + 100));
-  }
+  const loadBids = async (auctionId: number) => {
+    try {
+      const data = await ApiService.getAuctionBids(auctionId);
+      setBids(data);
+      if (data.length > 0) {
+        setBidAmount(String(data[0].amount + 100));
+      } else {
+        const item = auctions.find((a) => a.id === auctionId);
+        setBidAmount(String((item?.startingPrice || 3500) + 100));
+      }
+    } catch {
+      showToast("Error al cargar pujas", "error");
+    }
+  };
 
-  const currentTop = parseInt(bids[0].amount.replace(/\$|,/g, ""), 10);
+  const handleOpenCreate = () => {
+    setAuctionToEdit(null);
+    setName("");
+    setStartingPrice("");
+    setImgUrl("");
+    setDescription("");
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = (item: AuctionItem) => {
+    setAuctionToEdit(item);
+    setName(item.name);
+    setStartingPrice(String(item.startingPrice));
+    setImgUrl(item.img);
+    setDescription(item.description || "");
+    setIsModalOpen(true);
+  };
+
+  const handleSaveAuction = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim() || !startingPrice) {
+      showToast("Nombre y precio inicial son obligatorios", "error");
+      return;
+    }
+    try {
+      if (auctionToEdit) {
+        await ApiService.updateAuction(auctionToEdit.id, {
+          name: name.trim(),
+          startingPrice: Number(startingPrice),
+          img: imgUrl.trim() || auctionToEdit.img,
+          description: description.trim(),
+        });
+        showToast("Subasta actualizada exitosamente", "success");
+      } else {
+        const created = await ApiService.createAuction({
+          name: name.trim(),
+          startingPrice: Number(startingPrice),
+          img: imgUrl.trim() || "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&h=600&fit=crop&auto=format",
+          description: description.trim(),
+        });
+        showToast("¡Subasta creada y publicada con éxito!", "success");
+        setSelectedAuction(created);
+      }
+      setIsModalOpen(false);
+      loadAuctions();
+    } catch (err: any) {
+      showToast(err.message || "Error al guardar subasta", "error");
+    }
+  };
+
+  const handleDeleteAuction = async (id: number) => {
+    if (window.confirm("¿Confirmas que deseas eliminar esta subasta?")) {
+      await ApiService.deleteAuction(id);
+      showToast("Subasta eliminada", "info");
+      loadAuctions();
+    }
+  };
+
+  const handlePlaceBid = async () => {
+    if (!selectedAuction) return;
+    const num = Number(bidAmount);
+    setLoading(true);
+    try {
+      await ApiService.placeBid(selectedAuction.id, num);
+      showToast(`¡Puja registrada exitosamente por $${num.toLocaleString()} MXN!`, "success");
+      setShowConfirm(false);
+      loadBids(selectedAuction.id);
+    } catch (err: any) {
+      showToast(err.message || "Error al enviar la puja", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const topBid = bids[0]?.amount || selectedAuction?.startingPrice || 3500;
+  const hours = String(Math.floor(timeSec / 3600)).padStart(2, "0");
+  const mins = String(Math.floor((timeSec % 3600) / 60)).padStart(2, "0");
+  const secs = String(timeSec % 60).padStart(2, "0");
 
   return (
-    <MobileShell>
-      <StatusBar />
-      {/* Top bar */}
-      <div style={{ display: "flex", alignItems: "center", padding: "4px 16px 14px", gap: 12, background: C.card, borderBottom: `1px solid ${C.border}`, flexShrink: 0 }}>
-        <div style={{ flex: 1 }}>
-          <h2 style={{ fontSize: 17, fontWeight: 700, color: C.charcoal, margin: 0 }}>Subasta Activa</h2>
-          <div style={{ fontSize: 12, color: C.teal, fontWeight: 500 }}>PlayStation 5 Digital Edition</div>
+    <div className="flex-1 flex flex-col overflow-hidden bg-slate-50">
+      {/* Header */}
+      <div className="px-5 py-3.5 bg-white border-b border-slate-200 flex items-center justify-between flex-shrink-0">
+        <div>
+          <h2 className="font-extrabold text-sm text-slate-800">Subastas Activas</h2>
+          <span className="text-[11px] text-teal-700 font-semibold">{selectedAuction?.name || "Selecciona una subasta"}</span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-          <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#EF4444", animation: "pulse 1s infinite" }} />
-          <span style={{ fontSize: 12, color: "#EF4444", fontWeight: 600 }}>EN VIVO</span>
-        </div>
+        <button
+          onClick={handleOpenCreate}
+          className="px-3 py-1.5 rounded-xl bg-teal-600 text-white font-bold text-xs hover:bg-teal-700 shadow-sm"
+        >
+          Publicar Subasta
+        </button>
       </div>
 
-      <div style={{ flex: 1, overflowY: "auto" }}>
-        {/* Banner */}
-        <div style={{ position: "relative", height: 180, background: "#0F172A", overflow: "hidden" }}>
-          <img src="https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=500&h=300&fit=crop&auto=format" alt="PS5" style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.5 }} />
-          {/* Countdown overlay */}
-          <div style={{ position: "absolute", bottom: 16, right: 16, background: C.amber, borderRadius: 14, padding: "10px 16px", boxShadow: "0 4px 16px rgba(245,158,11,.4)" }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: "#78350F", letterSpacing: 0.5, marginBottom: 2 }}>TERMINA EN</div>
-            <div style={{ fontSize: 22, fontWeight: 800, color: "#1C1917", letterSpacing: 2, fontVariantNumeric: "tabular-nums" }}>{hh}:{mm}:{ss}</div>
-          </div>
-          <div style={{ position: "absolute", top: 16, left: 16 }}>
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,.7)", fontWeight: 500 }}>23 participantes activos</div>
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* Auctions Selector / Carousel */}
+        <div>
+          <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest block mb-2 px-1">
+            Artículos en Subasta ({auctions.length})
+          </span>
+          <div className="flex gap-2.5 overflow-x-auto pb-1">
+            {auctions.map((a) => {
+              const isSel = selectedAuction?.id === a.id;
+              return (
+                <div
+                  key={a.id}
+                  onClick={() => {
+                    setSelectedAuction(a);
+                    loadBids(a.id);
+                  }}
+                  className={`flex-shrink-0 w-36 bg-white rounded-2xl p-2.5 border-2 cursor-pointer transition-all flex flex-col justify-between ${
+                    isSel ? "border-teal-600 shadow-md ring-2 ring-teal-600/20" : "border-slate-200 opacity-80 hover:opacity-100"
+                  }`}
+                >
+                  <img src={a.img} alt={a.name} className="w-full h-24 rounded-xl object-cover mb-2" />
+                  <h4 className="font-bold text-xs text-slate-800 line-clamp-1">{a.name}</h4>
+                  <div className="flex items-center justify-between mt-2 pt-1 border-t border-slate-100">
+                    <span className="text-[11px] font-extrabold text-teal-700">${a.startingPrice.toLocaleString()}</span>
+                    {selectedAuction?.id === a.id && (
+                      <div className="flex gap-1">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleOpenEdit(a); }}
+                          className="text-[10px] text-teal-600 hover:underline font-bold"
+                          title="Editar"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleDeleteAuction(a.id); }}
+                          className="text-[10px] text-rose-600 hover:underline font-bold"
+                          title="Eliminar"
+                        >
+                          X
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Top bid headline */}
-        <div style={{ padding: "20px 20px 16px", background: C.card, borderBottom: `1px solid ${C.border}` }}>
-          <div style={{ fontSize: 12, color: C.muted, fontWeight: 500, marginBottom: 4 }}>Puja actual más alta</div>
-          <div style={{ fontSize: 32, fontWeight: 800, color: C.charcoal }}>
-            ${currentTop.toLocaleString()} <span style={{ fontSize: 14, color: C.muted, fontWeight: 400 }}>MXN</span>
-          </div>
-          <div style={{ fontSize: 12, color: C.teal, fontWeight: 500, marginTop: 4 }}>por {bids[0].user}</div>
-        </div>
-
-        {/* Bids list */}
-        <div style={{ padding: "16px 16px 100px" }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: C.muted, letterSpacing: 0.5, marginBottom: 12 }}>HISTORIAL DE PUJAS</div>
-          {bids.map((b, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: `1px solid ${C.border}` }}>
-              <div style={{ width: 36, height: 36, borderRadius: "50%", background: i === 0 ? C.teal : C.bg, border: `1.5px solid ${i === 0 ? C.teal : C.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <span style={{ fontSize: 11, fontWeight: 700, color: i === 0 ? "#fff" : C.muted }}>{b.avatar}</span>
+        {selectedAuction && (
+          <>
+            {/* Banner with countdown */}
+            <div className="relative rounded-3xl overflow-hidden bg-slate-900 text-white shadow-md">
+              <img
+                src={selectedAuction.img}
+                alt={selectedAuction.name}
+                className="w-full h-44 object-cover opacity-60"
+              />
+              <div className="absolute top-3 left-3 bg-black/60 px-3 py-1 rounded-full text-[11px] font-semibold backdrop-blur-xs">
+                Vendedor: {selectedAuction.seller}
               </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: C.charcoal }}>{b.user}</div>
-                <div style={{ fontSize: 11, color: C.muted }}>{b.time}</div>
-              </div>
-              <div style={{ textAlign: "right" }}>
-                <div style={{ fontSize: 15, fontWeight: 800, color: i === 0 ? C.teal : C.charcoal }}>{b.amount}</div>
-                {i === 0 && <div style={{ fontSize: 9, color: C.teal, fontWeight: 600 }}>LÍDER</div>}
+              <div className="absolute bottom-3 right-3 bg-amber-500 text-slate-950 p-2.5 rounded-2xl shadow-lg text-right font-mono">
+                <span className="text-[10px] font-black uppercase tracking-wider block text-amber-950">Termina en</span>
+                <span className="text-xl font-black font-mono">
+                  {hours}:{mins}:{secs}
+                </span>
               </div>
             </div>
-          ))}
-        </div>
+
+            {/* Top Bid Display */}
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 text-center shadow-xs">
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest block">Puja actual más alta</span>
+              <div className="text-3xl font-black text-slate-900 mt-1">
+                ${topBid.toLocaleString()} <span className="text-xs font-normal text-slate-400">MXN</span>
+              </div>
+              <span className="text-xs font-bold text-teal-700 mt-1 inline-block">
+                Líder: {bids[0]?.user || "carlos_mx"}
+              </span>
+            </div>
+
+            {/* Quick Bid Increments */}
+            <div>
+              <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest block mb-2 px-1">
+                Incrementos rápidos
+              </span>
+              <div className="grid grid-cols-3 gap-2">
+                {[50, 100, 200].map((inc) => (
+                  <button
+                    key={inc}
+                    onClick={() => setBidAmount(String(topBid + inc))}
+                    className="py-2.5 rounded-xl border border-navy-200 bg-navy-50 text-navy-800 font-bold text-xs hover:bg-navy-100 transition-colors"
+                  >
+                    +${inc} MXN
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Bid Input and Action */}
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 space-y-3">
+              <label htmlFor="custom-bid" className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
+                Ingresa tu oferta
+              </label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <span className="absolute left-3.5 top-3 text-slate-400 font-bold">$</span>
+                  <input
+                    id="custom-bid"
+                    type="number"
+                    value={bidAmount}
+                    onChange={(e) => setBidAmount(e.target.value)}
+                    className="w-full pl-8 pr-12 py-2.5 rounded-xl border border-slate-200 font-bold text-slate-900 outline-none focus:ring-2 focus:ring-teal-600"
+                  />
+                  <span className="absolute right-3 top-3 text-slate-400 text-xs font-semibold">MXN</span>
+                </div>
+                <button
+                  onClick={() => setShowConfirm(true)}
+                  className="py-2.5 px-5 rounded-xl bg-teal-600 text-white font-bold text-xs hover:bg-teal-700 shadow-md shadow-teal-600/30 transition-colors focus:ring-2 focus:ring-teal-700 outline-none"
+                >
+                  Pujar
+                </button>
+              </div>
+            </div>
+
+            {/* Bids History */}
+            <div>
+              <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest block mb-2 px-1">
+                Historial de pujas recientes
+              </span>
+              <div className="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden shadow-xs">
+                {bids.map((b, idx) => (
+                  <div key={b.id || idx} className="p-3 flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2.5">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${idx === 0 ? "bg-teal-600 text-white" : "bg-slate-100 text-slate-600"}`}>
+                        {b.avatar || b.user?.substring(0, 2).toUpperCase()}
+                      </div>
+                      <div>
+                        <span className="font-bold text-slate-800 block">{b.user}</span>
+                        <span className="text-[10px] text-slate-400">{b.time || "Hace momentos"}</span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className={`font-black ${idx === 0 ? "text-teal-700 text-sm" : "text-slate-700"}`}>
+                        ${b.amount.toLocaleString()} MXN
+                      </span>
+                      {idx === 0 && <span className="text-[9px] font-bold text-teal-600 block">LÍDER</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
-      {/* Bottom bid bar */}
-      <div style={{ background: C.card, borderTop: `1px solid ${C.border}`, padding: "12px 16px 20px", flexShrink: 0, boxShadow: "0 -4px 20px rgba(0,0,0,.08)" }}>
-        <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
-          {[50, 100, 200].map((inc) => (
-            <button
-              key={inc}
-              onClick={() => setCustomBid(String(currentTop + inc))}
-              style={{ flex: 1, padding: "8px 4px", background: C.navyLight, border: `1.5px solid ${C.navy}`, borderRadius: 10, fontSize: 13, fontWeight: 600, color: C.navy, cursor: "pointer" }}
-            >
-              +${inc}
-            </button>
-          ))}
-        </div>
-        <div style={{ display: "flex", gap: 10 }}>
-          <div style={{ flex: 1, display: "flex", alignItems: "center", border: `2px solid ${C.border}`, borderRadius: 12, overflow: "hidden", background: C.bg }}>
-            <span style={{ padding: "0 10px", color: C.muted, fontSize: 15, fontWeight: 500 }}>$</span>
-            <input
-              type="number"
-              value={customBid}
-              onChange={(e) => setCustomBid(e.target.value)}
-              style={{ flex: 1, padding: "12px 8px 12px 0", border: "none", background: "transparent", fontSize: 15, fontWeight: 600, color: C.charcoal, outline: "none" }}
-            />
-            <span style={{ padding: "0 10px", color: C.muted, fontSize: 12 }}>MXN</span>
+      {/* Modal for Create/Edit Auction */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-fade-in" role="dialog" aria-modal="true">
+          <div className="bg-white rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl border border-slate-200">
+            <h3 className="text-lg font-bold text-slate-800">
+              {auctionToEdit ? "Editar Subasta" : "Publicar Nueva Subasta"}
+            </h3>
+            <form onSubmit={handleSaveAuction} className="space-y-4 text-xs font-semibold">
+              <div>
+                <label className="block uppercase text-[10px] text-slate-600 mb-1">Nombre del producto *</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Ej. Nintendo Switch OLED"
+                  required
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-teal-600"
+                />
+              </div>
+              <div>
+                <label className="block uppercase text-[10px] text-slate-600 mb-1">Precio inicial ($ MXN) *</label>
+                <input
+                  type="number"
+                  value={startingPrice}
+                  onChange={(e) => setStartingPrice(e.target.value)}
+                  placeholder="4500"
+                  required
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-teal-600"
+                />
+              </div>
+              <div>
+                <label className="block uppercase text-[10px] text-slate-600 mb-1">URL de la imagen *</label>
+                <input
+                  type="url"
+                  value={imgUrl}
+                  onChange={(e) => setImgUrl(e.target.value)}
+                  placeholder="https://images.unsplash.com/photo-..."
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-teal-600"
+                />
+                <span className="text-[10px] text-slate-400 font-normal mt-0.5 block">Pega el enlace de una imagen de Unsplash o web</span>
+              </div>
+              <div>
+                <label className="block uppercase text-[10px] text-slate-600 mb-1">Descripción</label>
+                <textarea
+                  rows={2}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Detalles del artículo en subasta..."
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 outline-none resize-none focus:ring-2 focus:ring-teal-600"
+                />
+              </div>
+              <div className="flex gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-3 rounded-xl bg-teal-600 text-white font-bold hover:bg-teal-700 shadow-md"
+                >
+                  {auctionToEdit ? "Guardar Cambios" : "Publicar Subasta"}
+                </button>
+              </div>
+            </form>
           </div>
+        </div>
+      )}
+
+      {/* Confirmation modal for bidding */}
+      {showConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in" role="dialog" aria-modal="true">
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl border border-slate-200">
+            <h3 className="font-bold text-base text-slate-800">¿Confirmar puja de subasta?</h3>
+            <p className="text-xs text-slate-600">
+              Estás a punto de ofertar <strong>${Number(bidAmount).toLocaleString()} MXN</strong> en {selectedAuction?.name}. Si nadie supera tu oferta, ganarás el artículo.
+            </p>
+            <div className="flex gap-2 pt-2">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handlePlaceBid}
+                disabled={loading}
+                className="flex-1 py-2.5 rounded-xl bg-teal-600 text-white font-bold text-xs hover:bg-teal-700"
+              >
+                {loading ? "Enviando..." : "Confirmar Puja"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <BottomNav active="subastas" onTab={onTab} />
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SCREEN 6 — User Profile (Dynamic stats, no verified stars badge)
+// ═══════════════════════════════════════════════════════════════════════════════
+function ProfileScreen({
+  currentUser,
+  onTab,
+  onOpenPublish,
+  onOpenTrades,
+  onLogout,
+}: {
+  currentUser: User | null;
+  onTab: (t: NavTab) => void;
+  onOpenPublish: () => void;
+  onOpenTrades: () => void;
+  onLogout: () => void;
+}) {
+  const name = currentUser?.name || "Sergio Mendoza";
+  const email = currentUser?.email || "demo@truec.app";
+  const initial = name.substring(0, 1).toUpperCase();
+
+  const [pubCount, setPubCount] = useState(3);
+  const [tradeCount, setTradeCount] = useState(7);
+
+  useEffect(() => {
+    const isDemo = name.toLowerCase().includes("sergio") || email.toLowerCase().includes("demo");
+    if (isDemo) {
+      setPubCount(3);
+      setTradeCount(7);
+    } else {
+      ApiService.getProducts()
+        .then((prods) => {
+          const myProds = prods.filter((p) => p.seller?.name === name);
+          setPubCount(Math.max(1, myProds.length));
+        })
+        .catch(() => setPubCount(1));
+
+      ApiService.getTrades()
+        .then((trades) => {
+          const myTrades = trades.filter((t) => t.senderName === name || t.sellerName === name);
+          setTradeCount(Math.max(1, myTrades.length));
+        })
+        .catch(() => setTradeCount(1));
+    }
+  }, [name, email]);
+
+  return (
+    <div className="flex-1 flex flex-col overflow-hidden bg-slate-50">
+      {/* Header */}
+      <div className="px-5 py-3.5 bg-white border-b border-slate-200 flex items-center justify-between flex-shrink-0">
+        <h2 className="font-extrabold text-sm text-slate-800">Mi Perfil</h2>
+        <button onClick={onLogout} className="text-xs font-bold text-rose-600 hover:underline">
+          Cerrar sesión
+        </button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-5 space-y-5">
+        {/* Profile Card */}
+        <div className="bg-white p-5 rounded-3xl border border-slate-200 text-center shadow-xs">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-teal-600 to-navy-900 text-white font-black text-2xl flex items-center justify-center mx-auto shadow-md shadow-teal-600/20">
+            {initial}
+          </div>
+          <h3 className="font-extrabold text-base text-slate-900 mt-3">{name}</h3>
+          <p className="text-xs text-slate-400">{email}</p>
+
+          {/* Stats */}
+          <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-slate-100 text-center">
+            <div>
+              <span className="font-extrabold text-slate-900 text-base block">{pubCount}</span>
+              <span className="text-[10px] text-slate-400 font-semibold">Publicaciones</span>
+            </div>
+            <div className="border-l border-slate-100">
+              <span className="font-extrabold text-teal-700 text-base block">{tradeCount}</span>
+              <span className="text-[10px] text-slate-400 font-semibold">Trueques</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Options list */}
+        <div className="bg-white rounded-3xl border border-slate-200 divide-y divide-slate-100 overflow-hidden shadow-xs text-xs font-bold text-slate-700">
           <button
-            onClick={() => placeBid(parseInt(customBid))}
-            style={{ padding: "0 16px", background: `linear-gradient(135deg, ${C.teal} 0%, ${C.tealDark} 100%)`, color: "#fff", border: "none", borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", boxShadow: "0 3px 12px rgba(0,137,123,.3)" }}
+            onClick={onOpenPublish}
+            className="w-full p-4 flex items-center justify-between hover:bg-slate-50 transition-colors text-left"
           >
-            Confirmar Puja
+            <div className="flex items-center gap-3">
+              <span>Publicar nuevo producto</span>
+            </div>
+            <span className="text-slate-400">→</span>
+          </button>
+
+          <button
+            onClick={onOpenTrades}
+            className="w-full p-4 flex items-center justify-between hover:bg-slate-50 transition-colors text-left"
+          >
+            <div className="flex items-center gap-3">
+              <span>Gestionar mis propuestas de trueque</span>
+            </div>
+            <span className="text-slate-400">→</span>
           </button>
         </div>
       </div>
-      <BottomNav active="subastas" onTab={onNav} />
-    </MobileShell>
+
+      <BottomNav active="perfil" onTab={onTab} />
+    </div>
   );
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ROOT — five separate mobile frames
+// ROOT APP COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function App() {
-  const goTo = (frame: string) => document.getElementById(frame)?.scrollIntoView({ behavior: "smooth", block: "center" });
-  const handleNav = (tab: NavTab) => {
-    const frameByTab: Record<NavTab, string> = { inicio: "02_Home_Catalog", trueques: "04_Trade_Proposal", subastas: "05_Live_Auction", perfil: "01_Login" };
-    goTo(frameByTab[tab]);
+  const [viewMode, setViewMode] = useState<ViewMode>("phone");
+  const [activeTab, setActiveTab] = useState<NavTab>("inicio");
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isOnline, setIsOnline] = useState(false);
+  const [favorites, setFavorites] = useState<number[]>([1]);
+  const [toasts, setToasts] = useState<ToastNotification[]>([]);
+
+  // Modals state
+  const [isPublishOpen, setIsPublishOpen] = useState(false);
+  const [isTradesOpen, setIsTradesOpen] = useState(false);
+  const [isPlayStoreOpen, setIsPlayStoreOpen] = useState(false);
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [productToEdit, setProductToEdit] = useState<Product | null>(null);
+
+  const handleOpenPublish = () => {
+    setProductToEdit(null);
+    setIsPublishOpen(true);
   };
 
+  const handleProductUpdated = (updatedProd: Product) => {
+    setSelectedProduct(updatedProd);
+    showToast("Producto actualizado exitosamente", "success");
+  };
+
+  useEffect(() => {
+    // Check initial health and favorites
+    ApiService.checkHealth().then((ok) => setIsOnline(ok));
+    setFavorites(ApiService.getFavorites());
+
+    // Check saved session
+    const sess = localStorage.getItem("truec-session");
+    if (!sess) {
+      setIsLoggedIn(false);
+      setCurrentUser(null);
+    } else {
+      try {
+        const data = JSON.parse(sess);
+        if (data.user) {
+          setCurrentUser(data.user);
+          setIsLoggedIn(true);
+        } else {
+          setIsLoggedIn(false);
+        }
+      } catch {
+        setIsLoggedIn(false);
+      }
+    }
+  }, []);
+
+  const showToast = (message: string, type: ToastNotification["type"] = "info") => {
+    const id = `${Date.now()}-${Math.random()}`;
+    setToasts((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 3800);
+  };
+
+  const handleToggleFavorite = (id: number) => {
+    const isNowFav = ApiService.toggleFavorite(id);
+    setFavorites(ApiService.getFavorites());
+    showToast(isNowFav ? "Guardado en favoritos" : "Eliminado de favoritos", "info");
+  };
+
+  const handleProductCreated = (newProd: Product) => {
+    setSelectedProduct(newProd);
+    setActiveTab("inicio");
+  };
+
+  const handleDeleteProduct = async (id: number) => {
+    try {
+      await ApiService.deleteProduct(id);
+      showToast("Producto eliminado exitosamente del catálogo", "info");
+      setSelectedProduct(null);
+      setActiveTab("inicio");
+    } catch (err: any) {
+      showToast(err.message || "Error al eliminar producto", "error");
+    }
+  };
+
+  const handleLoginSuccess = (user: User) => {
+    setCurrentUser(user);
+    setIsLoggedIn(true);
+    showToast(`¡Bienvenido, ${user.name}!`, "success");
+  };
+
+  // If in Figma Canvas View Mode: Show 5 frames side by side!
+  if (viewMode === "canvas") {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col font-sans">
+        <DeviceToolbar
+          viewMode={viewMode}
+          onSetViewMode={setViewMode}
+          isOnline={isOnline}
+          onOpenPublish={handleOpenPublish}
+          onOpenTrades={() => setIsTradesOpen(true)}
+          onOpenPlayStore={() => setIsPlayStoreOpen(true)}
+          onOpenGuide={() => setIsGuideOpen(true)}
+        />
+        <div className="flex-1 p-8 flex gap-8 overflow-x-auto items-start">
+          <div className="flex-shrink-0">
+            <span className="text-white text-xs font-bold block mb-2">Pantalla 1: Inicio de Sesión</span>
+            <DeviceFrame viewMode="phone">
+              <LoginScreen onLoginSuccess={handleLoginSuccess} />
+            </DeviceFrame>
+          </div>
+          <div className="flex-shrink-0">
+            <span className="text-white text-xs font-bold block mb-2">Pantalla 2: Catálogo y Filtros</span>
+            <DeviceFrame viewMode="phone">
+              <HomeScreen
+                currentUser={currentUser}
+                onSelectProduct={(p) => { setSelectedProduct(p); setViewMode("phone"); }}
+                onOpenPublish={handleOpenPublish}
+                onTab={setActiveTab}
+                showToast={showToast}
+              />
+            </DeviceFrame>
+          </div>
+          <div className="flex-shrink-0">
+            <span className="text-white text-xs font-bold block mb-2">Pantalla 3: Detalle de Producto</span>
+            <DeviceFrame viewMode="phone">
+              <DetailScreen
+                product={selectedProduct || {
+                  id: 1,
+                  name: "PlayStation 5 Digital Edition",
+                  price: 8500,
+                  condition: "Excelente estado",
+                  category: "Consolas",
+                  acceptsBarter: true,
+                  img: "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=600&h=600&fit=crop&auto=format",
+                  description: "Consola cuidada y completamente funcional.",
+                  seller: { name: "Carlos M.", verified: true, rating: 4.8, sales: 48 },
+                  specs: [["Almacenamiento", "825 GB SSD NVMe"], ["Resolución", "4K HDR"]],
+                }}
+                onBack={() => {}}
+                onTrade={() => setActiveTab("trueques")}
+                onTab={setActiveTab}
+                showToast={showToast}
+                onDeleteProduct={handleDeleteProduct}
+                onEditProduct={(p) => { setProductToEdit(p); setIsPublishOpen(true); }}
+              />
+            </DeviceFrame>
+          </div>
+          <div className="flex-shrink-0">
+            <span className="text-white text-xs font-bold block mb-2">Pantalla 4: Proponer Trueque</span>
+            <DeviceFrame viewMode="phone">
+              <TradeScreen
+                targetProduct={selectedProduct || {
+                  id: 1,
+                  name: "PlayStation 5 Digital Edition",
+                  price: 8500,
+                  condition: "Excelente estado",
+                  category: "Consolas",
+                  acceptsBarter: true,
+                  img: "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=600&h=600&fit=crop&auto=format",
+                  description: "Consola en perfecto estado.",
+                  seller: { name: "Carlos M.", verified: true, rating: 4.8, sales: 48 },
+                }}
+                onBack={() => {}}
+                onTab={setActiveTab}
+                showToast={showToast}
+                onOpenTradesManager={() => setIsTradesOpen(true)}
+              />
+            </DeviceFrame>
+          </div>
+          <div className="flex-shrink-0">
+            <span className="text-white text-xs font-bold block mb-2">Pantalla 5: Subasta Activa</span>
+            <DeviceFrame viewMode="phone">
+              <AuctionScreen onTab={setActiveTab} showToast={showToast} />
+            </DeviceFrame>
+          </div>
+        </div>
+
+        {/* Global Modals */}
+        <ToastContainer toasts={toasts} onDismiss={(id) => setToasts((prev) => prev.filter((t) => t.id !== id))} />
+        <PublishProductModal
+          isOpen={isPublishOpen}
+          onClose={() => { setIsPublishOpen(false); setProductToEdit(null); }}
+          onCreated={handleProductCreated}
+          onUpdated={handleProductUpdated}
+          productToEdit={productToEdit}
+          showToast={showToast}
+        />
+        <TradesManagerModal isOpen={isTradesOpen} onClose={() => setIsTradesOpen(false)} showToast={showToast} />
+        <PlayStoreModal isOpen={isPlayStoreOpen} onClose={() => setIsPlayStoreOpen(false)} showToast={showToast} />
+        <EvaluatorGuideModal
+          isOpen={isGuideOpen}
+          onClose={() => setIsGuideOpen(false)}
+          showToast={showToast}
+          onNavigateTab={setActiveTab}
+          onOpenPublish={handleOpenPublish}
+          onOpenTrades={() => setIsTradesOpen(true)}
+          onOpenPlayStore={() => setIsPlayStoreOpen(true)}
+        />
+      </div>
+    );
+  }
+
+  // Interactive App Mode (Phone or Fullscreen)
   return (
-    <div style={{ minHeight: "100vh", background: "#0F172A", display: "flex", flexWrap: "nowrap", alignItems: "flex-start", gap: 40, padding: "32px 24px 48px", overflowX: "auto", fontFamily: "'Inter', sans-serif" }}>
-      <div id="01_Login" style={{ width: 393, flex: "0 0 393px" }}><LoginScreen onLogin={() => goTo("02_Home_Catalog")} /></div>
-      <div id="02_Home_Catalog" style={{ width: 393, flex: "0 0 393px" }}><HomeScreen onProduct={() => goTo("03_Product_Detail")} onNav={handleNav} /></div>
-      <div id="03_Product_Detail" style={{ width: 393, flex: "0 0 393px" }}><DetailScreen onBack={() => goTo("02_Home_Catalog")} onTrade={() => goTo("04_Trade_Proposal")} onNav={handleNav} /></div>
-      <div id="04_Trade_Proposal" style={{ width: 393, flex: "0 0 393px" }}><TradeScreen onBack={() => goTo("03_Product_Detail")} onNav={handleNav} /></div>
-      <div id="05_Live_Auction" style={{ width: 393, flex: "0 0 393px" }}><AuctionScreen onNav={handleNav} /></div>
+    <div className="min-h-screen bg-slate-900 flex flex-col font-sans select-none sm:select-auto">
+      <DeviceToolbar
+        viewMode={viewMode}
+        onSetViewMode={setViewMode}
+        isOnline={isOnline}
+        onOpenPublish={handleOpenPublish}
+        onOpenTrades={() => setIsTradesOpen(true)}
+        onOpenPlayStore={() => setIsPlayStoreOpen(true)}
+        onOpenGuide={() => setIsGuideOpen(true)}
+      />
+
+      <div className="flex-1 flex items-center justify-center p-0 sm:p-6 overflow-hidden">
+        <DeviceFrame viewMode={viewMode}>
+          {!isLoggedIn ? (
+            <LoginScreen onLoginSuccess={handleLoginSuccess} />
+          ) : selectedProduct ? (
+            <DetailScreen
+              product={selectedProduct}
+              onBack={() => setSelectedProduct(null)}
+              onTrade={() => {
+                setActiveTab("trueques");
+              }}
+              onTab={(t) => {
+                setSelectedProduct(null);
+                setActiveTab(t);
+              }}
+              showToast={showToast}
+              onDeleteProduct={handleDeleteProduct}
+              onEditProduct={(p) => { setProductToEdit(p); setIsPublishOpen(true); }}
+            />
+          ) : activeTab === "inicio" ? (
+            <HomeScreen
+              currentUser={currentUser}
+              onSelectProduct={(p) => setSelectedProduct(p)}
+              onOpenPublish={handleOpenPublish}
+              onTab={setActiveTab}
+              showToast={showToast}
+            />
+          ) : activeTab === "trueques" ? (
+            <TradeScreen
+              targetProduct={selectedProduct || {
+                id: 1,
+                name: "PlayStation 5 Digital Edition",
+                price: 8500,
+                condition: "Excelente estado",
+                category: "Consolas",
+                acceptsBarter: true,
+                img: "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=600&h=600&fit=crop&auto=format",
+                description: "Consola cuidada y completamente funcional.",
+                seller: { name: "Carlos M.", verified: true, rating: 4.8, sales: 48 },
+              }}
+              onBack={() => setActiveTab("inicio")}
+              onTab={setActiveTab}
+              showToast={showToast}
+              onOpenTradesManager={() => setIsTradesOpen(true)}
+            />
+          ) : activeTab === "subastas" ? (
+            <AuctionScreen onTab={setActiveTab} showToast={showToast} />
+          ) : (
+            <ProfileScreen
+              currentUser={currentUser}
+              onTab={setActiveTab}
+              onOpenPublish={handleOpenPublish}
+              onOpenTrades={() => setIsTradesOpen(true)}
+              onLogout={() => {
+                localStorage.removeItem("truec-session");
+                setIsLoggedIn(false);
+                setCurrentUser(null);
+                showToast("Sesión cerrada correctamente", "info");
+              }}
+            />
+          )}
+        </DeviceFrame>
+      </div>
+
+      {/* Global Modals & Toasts */}
+      <ToastContainer toasts={toasts} onDismiss={(id) => setToasts((prev) => prev.filter((t) => t.id !== id))} />
+      <PublishProductModal
+        isOpen={isPublishOpen}
+        onClose={() => { setIsPublishOpen(false); setProductToEdit(null); }}
+        onCreated={handleProductCreated}
+        onUpdated={handleProductUpdated}
+        productToEdit={productToEdit}
+        showToast={showToast}
+      />
+      <TradesManagerModal isOpen={isTradesOpen} onClose={() => setIsTradesOpen(false)} showToast={showToast} />
+      <PlayStoreModal isOpen={isPlayStoreOpen} onClose={() => setIsPlayStoreOpen(false)} showToast={showToast} />
+      <EvaluatorGuideModal
+        isOpen={isGuideOpen}
+        onClose={() => setIsGuideOpen(false)}
+        showToast={showToast}
+        onNavigateTab={setActiveTab}
+        onOpenPublish={handleOpenPublish}
+        onOpenTrades={() => setIsTradesOpen(true)}
+        onOpenPlayStore={() => setIsPlayStoreOpen(true)}
+      />
     </div>
   );
 }
