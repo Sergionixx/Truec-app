@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="registration_brand">Truec-app / Room</string>
+    <string name="registration_title">Registro de usuarios</string>
+    <string name="registration_intro">Crea un registro local. Todos los campos son obligatorios.</string>
+    <string name="nombre">Nombre</string>
+    <string name="apellidos">Apellidos</string>
+    <string name="direccion">Dirección</string>
+    <string name="telefono">Teléfono</string>
+    <string name="guardar">Guardar usuario</string>
+    <string name="open_catalog">Abrir catálogo Truec-app</string>
+    <string name="required">Campo obligatorio</string>
+    <string name="validation_error">Completa todos los campos. No se guardó ningún usuario.</string>
+    <string name="saving">Guardando…</string>
+    <string name="saved">Usuario registrado con éxito. ID: %1$d</string>
+    <string name="total_users">Usuarios guardados: %1$d</string>
+    <string name="read_error">No se pudo leer la base local. Vuelve a abrir la pantalla.</string>
+    <string name="save_error">No se pudo guardar. Tus datos siguen en el formulario; inténtalo de nuevo.</string>
+    <string name="count_error">Registro guardado; contador no disponible.</string>
+    <string name="local_storage">Almacenamiento local con Room · Sin conexión</string>
+</resources>

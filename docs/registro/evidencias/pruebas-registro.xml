@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuite name="com.truecapp.mobile.UserRegistrationTest" tests="3" failures="0" errors="0" skipped="0" time="14.552" timestamp="2026-09-11T23:19:13" hostname="localhost">
+  <properties>
+    <property name="device" value="SM-A115M - 12" />
+    <property name="flavor" value="" />
+    <property name="project" value=":app" />
+  </properties>
+  <testcase name="generatedIdsQueriesAndPersistence" classname="com.truecapp.mobile.UserRegistrationTest" time="0.466" />
+  <testcase name="everyRequiredFieldRejectsEmptyAndWhitespace" classname="com.truecapp.mobile.UserRegistrationTest" time="8.489" />
+  <testcase name="databaseInstanceIsShared" classname="com.truecapp.mobile.UserRegistrationTest" time="0.003" />
+</testsuite>

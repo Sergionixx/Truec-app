@@ -1,0 +1,107 @@
+[
+  {
+    "test": "health",
+    "observed": {
+      "status": 200,
+      "body": {
+        "ok": true,
+        "service": "truec-api",
+        "version": "1.2.0",
+        "timestamp": "2026-09-25T17:48:26.519Z"
+      }
+    }
+  },
+  {
+    "test": "duplicate_registration",
+    "observed": {
+      "backendStatus": 409,
+      "clientReturnedSuccess": true,
+      "mode": "local"
+    }
+  },
+  {
+    "test": "offline_registered_user_relogin",
+    "observed": {
+      "login": "offline test"
+    }
+  },
+  {
+    "test": "invalid_product_update_without_auth",
+    "observed": {
+      "status": 200,
+      "name": "",
+      "price": -100,
+      "imageUpdated": false
+    }
+  },
+  {
+    "test": "trade_to_missing_product",
+    "observed": {
+      "status": 201,
+      "body": {
+        "trade": {
+          "id": 1790358506541,
+          "wantedProductId": 999999,
+          "wantedProductName": "Producto tecnológico",
+          "offeredItem": "Audit item",
+          "offeredValue": 0,
+          "message": "",
+          "senderName": "Sergio Mendoza",
+          "sellerName": "Vendedor",
+          "status": "pending",
+          "createdAt": "2026-09-25T17:48:26.541Z"
+        },
+        "message": "Propuesta de trueque registrada exitosamente."
+      }
+    }
+  },
+  {
+    "test": "auctions_endpoint",
+    "observed": {
+      "status": 404,
+      "body": {
+        "error": "Excepción: Ruta '/api/auctions' no encontrada en la API."
+      }
+    }
+  },
+  {
+    "test": "offline_auction_isolation",
+    "observed": {
+      "requestedAuction": 2,
+      "returnedAuctionIds": [
+        1
+      ]
+    }
+  },
+  {
+    "test": "low_opening_bid_nonexistent_auction",
+    "observed": {
+      "status": 201,
+      "body": {
+        "bid": {
+          "id": 1790358506546,
+          "auctionId": 987654,
+          "user": "Sergio Mendoza (Tú)",
+          "amount": 1,
+          "time": "Ahora mismo",
+          "avatar": "SM",
+          "createdAt": "2026-09-25T17:48:26.546Z"
+        },
+        "message": "¡Puja aceptada! Ahora lideras la subasta con $1 MXN."
+      }
+    }
+  },
+  {
+    "test": "release_integrity",
+    "observed": {
+      "bytes": 193,
+      "declared": "4e545a90f1ffe9023b73b1ee0b5f9d120e30c380ca87b1940616136207dcbe13",
+      "actual": "c028f01b40546f3bf63dbce29af33547f1e56dc77bca6c8516a86c6aec5e9bea",
+      "match": false
+    }
+  },
+  {
+    "test": "contrast_white_teal",
+    "observed": "4.317"
+  }
+]

@@ -19,3 +19,9 @@ logs/
 # beside it.
 /.plugins/
 /.opencode-skills/
+
+# Android local tooling; Room schemas belong in source control.
+android-app/.gradle/
+android-app/.kotlin/
+android-app/local.properties
+android-app/.idea/

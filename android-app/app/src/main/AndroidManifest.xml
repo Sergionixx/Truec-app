@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:allowBackup="true"
+        android:icon="@drawable/ic_truec"
         android:label="Truec-app"
-        android:theme="@style/Theme.TruecApp"
-        android:usesCleartextTraffic="true">
+        android:theme="@style/Theme.TruecApp">
+        <activity android:name=".DemoActivity" android:exported="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true">
