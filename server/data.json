@@ -1,10 +1,208 @@
 {
-  "users": [{ "id": 1, "name": "Usuario Demo", "email": "demo@truec.app", "password": "demo123" }],
-  "products": [
-    { "id": 1, "name": "PlayStation 5 Digital", "price": 8500, "condition": "Excelente estado", "category": "Consolas", "acceptsBarter": true },
-    { "id": 2, "name": "MacBook Air M2", "price": 19900, "condition": "Como nuevo", "category": "Laptops", "acceptsBarter": false },
-    { "id": 3, "name": "iPhone 14 Pro Max", "price": 14200, "condition": "Seminuevo", "category": "Celulares", "acceptsBarter": true }
+  "users": [
+    {
+      "id": 1,
+      "name": "Sergio Mendoza",
+      "email": "demo@truec.app",
+      "password": "demo123",
+      "rating": 4.9,
+      "reviews": 12,
+      "trades": 7,
+      "publications": 3
+    }
   ],
-  "trades": [],
-  "bids": [{ "id": 1, "auctionId": 1, "user": "carlos_mx", "amount": 3500, "createdAt": "2026-09-01T20:00:00.000Z" }]
+  "products": [
+    {
+      "id": 1,
+      "name": "PlayStation 5 Digital Edition",
+      "price": 8500,
+      "condition": "Excelente estado",
+      "category": "Consolas",
+      "acceptsBarter": true,
+      "img": "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=600&h=600&fit=crop&auto=format",
+      "description": "Consola cuidada y completamente funcional. Incluye un control DualSense original, cables HDMI de alta velocidad y alimentación. Sin detalles estéticos ni de sobrecalentamiento. Lista para entrega en Guadalajara.",
+      "seller": { "name": "Carlos M.", "verified": true, "rating": 4.8, "sales": 48 },
+      "specs": [
+        ["Almacenamiento", "825 GB SSD NVMe"],
+        ["Resolución", "Hasta 4K @ 120fps / HDR"],
+        ["Audio", "Tempest 3D AudioTech"],
+        ["Incluye", "Control DualSense + cables originales"]
+      ]
+    },
+    {
+      "id": 2,
+      "name": "MacBook Air M2 (16GB RAM / 512GB)",
+      "price": 19900,
+      "condition": "Como nuevo",
+      "category": "Laptops",
+      "acceptsBarter": false,
+      "img": "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=600&h=600&fit=crop&auto=format",
+      "description": "MacBook Air en color Medianoche con solo 42 ciclos de batería (salud al 99%). Teclado en español, cargador MagSafe de 35W original y caja intacta. Ideal para desarrollo y diseño.",
+      "seller": { "name": "Valeria R.", "verified": true, "rating": 5.0, "sales": 19 },
+      "specs": [
+        ["Chip", "Apple M2 (8 núcleos CPU, 10 GPU)"],
+        ["Memoria", "16 GB unificada"],
+        ["Pantalla", "13.6 pulgadas Liquid Retina"],
+        ["Batería", "Hasta 18 horas de autonomía"]
+      ]
+    },
+    {
+      "id": 3,
+      "name": "iPhone 14 Pro Max 256GB Deep Purple",
+      "price": 14200,
+      "condition": "Seminuevo",
+      "category": "Celulares",
+      "acceptsBarter": true,
+      "img": "https://images.unsplash.com/photo-1592286927505-1def25115558?w=600&h=600&fit=crop&auto=format",
+      "description": "Libre de fábrica para cualquier compañía telefónica. Estética 9.5/10, batería al 89%. Pantalla sin rayones gracias a mica de cristal templado desde el primer día.",
+      "seller": { "name": "Rodrigo T.", "verified": true, "rating": 4.7, "sales": 31 },
+      "specs": [
+        ["Pantalla", "6.7\" Super Retina XDR ProMotion"],
+        ["Cámara", "48 MP principal + teleobjetivo 3x"],
+        ["Chip", "A16 Bionic"],
+        ["Seguridad", "Face ID y Dynamic Island"]
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Nintendo Switch OLED Blanco",
+      "price": 5800,
+      "condition": "Buen estado",
+      "category": "Consolas",
+      "acceptsBarter": true,
+      "img": "https://images.unsplash.com/photo-1617096200347-cb04ae810b1d?w=600&h=600&fit=crop&auto=format",
+      "description": "Consola con pantalla OLED de 7 pulgadas en perfecto estado. Joy-Cons sin drift. Incluye base con puerto LAN, correas, adaptador AC y estuche rígido de viaje.",
+      "seller": { "name": "Mateo L.", "verified": false, "rating": 4.6, "sales": 14 },
+      "specs": [
+        ["Pantalla", "7.0 pulgadas OLED táctil capacitiva"],
+        ["Almacenamiento", "64 GB interno + microSD 128GB"],
+        ["Modos", "Televisor, sobremesa y portátil"],
+        ["Batería", "Aprox. 4.5 a 9 horas"]
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Samsung Galaxy S23 Ultra 512GB",
+      "price": 11500,
+      "condition": "Como nuevo",
+      "category": "Celulares",
+      "acceptsBarter": false,
+      "img": "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=600&h=600&fit=crop&auto=format",
+      "description": "Color Phantom Black, incluye S-Pen integrado. Cámara de 200MP con Space Zoom 100x. Se entrega con funda Spigen de uso rudo y cable de carga rápida.",
+      "seller": { "name": "Andrea G.", "verified": true, "rating": 4.9, "sales": 52 },
+      "specs": [
+        ["Cámara", "200 MP + Gran angular + 2 Teleobjetivos"],
+        ["Procesador", "Snapdragon 8 Gen 2 for Galaxy"],
+        ["Pantalla", "6.8\" Dynamic AMOLED 2X 120Hz"],
+        ["Stylus", "S Pen con latencia de 2.8ms"]
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Sony WH-1000XM5 Auriculares ANC",
+      "price": 4900,
+      "condition": "Excelente estado",
+      "category": "Audio",
+      "acceptsBarter": true,
+      "img": "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=600&h=600&fit=crop&auto=format",
+      "description": "Cancelación de ruido líder en la industria con dos procesadores y ocho micrófonos. Almohadillas impecables, estuche rígido y cable de 3.5mm.",
+      "seller": { "name": "Esteban P.", "verified": true, "rating": 4.8, "sales": 27 },
+      "specs": [
+        ["Cancelación", "Procesador V1 + QN1 integrado"],
+        ["Autonomía", "Hasta 30 horas con ANC activo"],
+        ["Carga rápida", "3 min = 3 horas de reproducción"],
+        ["Códecs", "LDAC, AAC y SBC de alta fidelidad"]
+      ]
+    },
+    {
+      "id": 7,
+      "name": "The Legend of Zelda: Tears of the Kingdom",
+      "price": 950,
+      "condition": "Buen estado",
+      "category": "Videojuegos",
+      "acceptsBarter": true,
+      "img": "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=600&h=600&fit=crop&auto=format",
+      "description": "Copia física para Nintendo Switch en caja original. Cartucho probado y sin rayones. Acepto trueque por Mario Wonder o Metroid Prime Remastered.",
+      "seller": { "name": "Gabriel H.", "verified": false, "rating": 4.5, "sales": 8 },
+      "specs": [
+        ["Plataforma", "Nintendo Switch"],
+        ["Formato", "Cartucho físico"],
+        ["Idioma", "Español, Inglés"],
+        ["Género", "Aventura de acción en mundo abierto"]
+      ]
+    }
+  ],
+  "trades": [
+    {
+      "id": 1727000000001,
+      "wantedProductId": 1,
+      "wantedProductName": "PlayStation 5 Digital Edition",
+      "offeredItem": "iPhone 12 Pro 128GB",
+      "offeredValue": 7200,
+      "message": "Hola Carlos, mi iPhone está en excelente condición estética con caja original y funda oficial. ¿Aceptarías el intercambio con $1,000 MXN a tu favor?",
+      "senderName": "Sergio Mendoza",
+      "sellerName": "Carlos M.",
+      "status": "pending",
+      "createdAt": "2026-09-23T14:30:00.000Z"
+    },
+    {
+      "id": 1727000000002,
+      "wantedProductId": 3,
+      "wantedProductName": "iPhone 14 Pro Max 256GB",
+      "offeredItem": "iPad Air 5 M1 (Wi-Fi 64GB)",
+      "offeredValue": 9800,
+      "message": "Te ofrezco mi iPad Air 5 con Apple Pencil de 2da generación incluido, sin un solo golpe.",
+      "senderName": "Daniela K.",
+      "sellerName": "Rodrigo T.",
+      "status": "accepted",
+      "createdAt": "2026-09-22T18:15:00.000Z"
+    }
+  ],
+  "bids": [
+    {
+      "id": 1,
+      "auctionId": 1,
+      "user": "carlos_mx",
+      "amount": 3500,
+      "time": "Hace 12 seg",
+      "avatar": "CM",
+      "createdAt": "2026-09-23T16:50:00.000Z"
+    },
+    {
+      "id": 2,
+      "auctionId": 1,
+      "user": "techfan99",
+      "amount": 3300,
+      "time": "Hace 1 min",
+      "avatar": "TF",
+      "createdAt": "2026-09-23T16:48:00.000Z"
+    },
+    {
+      "id": 3,
+      "auctionId": 1,
+      "user": "gamer_pro",
+      "amount": 3100,
+      "time": "Hace 3 min",
+      "avatar": "GP",
+      "createdAt": "2026-09-23T16:45:00.000Z"
+    },
+    {
+      "id": 4,
+      "auctionId": 1,
+      "user": "electro_daniel",
+      "amount": 2900,
+      "time": "Hace 5 min",
+      "avatar": "ED",
+      "createdAt": "2026-09-23T16:42:00.000Z"
+    },
+    {
+      "id": 5,
+      "auctionId": 1,
+      "user": "mx_deals",
+      "amount": 2700,
+      "time": "Hace 8 min",
+      "avatar": "MD",
+      "createdAt": "2026-09-23T16:38:00.000Z"
+    }
+  ]
 }
