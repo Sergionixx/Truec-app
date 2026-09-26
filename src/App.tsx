@@ -1,13 +1,10 @@
 import { useModalFocus } from "./components/useModalFocus";
 import React, { useState, useEffect, useId } from "react";
-import { NavTab, ViewMode, Product, ToastNotification, User, AuctionItem } from "./types";
+import { NavTab, Product, ToastNotification, User, AuctionItem } from "./types";
 import { ApiService } from "./services/api";
 import { ToastContainer } from "./components/Toast";
 import { PublishProductModal } from "./components/PublishProductModal";
 import { TradesManagerModal } from "./components/TradesManagerModal";
-import { PlayStoreModal } from "./components/PlayStoreModal";
-import { EvaluatorGuideModal } from "./components/EvaluatorGuideModal";
-import { DeviceToolbar } from "./components/DeviceToolbar";
 
 // ─── Color Tokens ────────────────────────────────────────────────────────────
 const C = {
@@ -27,38 +24,6 @@ const C = {
 };
 
 // ─── Shared Mobile Shell ─────────────────────────────────────────────────────
-function DeviceFrame({
-  children,
-  viewMode,
-}: {
-  children: React.ReactNode;
-  viewMode: ViewMode;
-}) {
-  if (viewMode === "fullscreen") {
-    return (
-      <div className="w-full min-h-screen bg-slate-50 flex justify-center">
-        <main className="w-full max-w-2xl min-h-screen bg-white shadow-xl flex flex-col relative border-x border-slate-200" role="main">
-          {children}
-        </main>
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className="relative flex flex-col overflow-hidden bg-slate-50 transition-all duration-300"
-      style={{
-        width: "min(393px, 100vw)",
-        height: "max(740px, calc(100dvh - 110px))",
-        borderRadius: 44,
-        boxShadow: "0 25px 60px -15px rgba(0,0,0,0.3), 0 0 0 10px #1e293b",
-      }}
-    >
-      {children}
-    </div>
-  );
-}
-
 // ─── Bottom Navigation ───────────────────────────────────────────────────────
 function BottomNav({
   active,
@@ -1585,24 +1550,18 @@ function ProfileScreen({
 // ROOT APP COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function App() {
-  const [viewMode, setViewMode] = useState<ViewMode>("phone");
   const [activeTab, setActiveTab] = useState<NavTab>("inicio");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [tradeTarget, setTradeTarget] = useState<Product | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isOnline, setIsOnline] = useState(false);
   const [favorites, setFavorites] = useState<number[]>([1]);
   const [toasts, setToasts] = useState<ToastNotification[]>([]);
 
   // Modals state
   const [isPublishOpen, setIsPublishOpen] = useState(false);
   const [isTradesOpen, setIsTradesOpen] = useState(false);
-  const [isPlayStoreOpen, setIsPlayStoreOpen] = useState(false);
-  const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
-
-  useEffect(() => { const id = setInterval(() => setIsOnline(ApiService.getMode() === "online"), 1000); return () => clearInterval(id); }, []);
 
   const handleOpenPublish = () => {
     setProductToEdit(null);
@@ -1616,7 +1575,6 @@ export default function App() {
 
   useEffect(() => {
     // Check initial health and favorites
-    ApiService.checkHealth().then((ok) => setIsOnline(ok));
     setFavorites(ApiService.getFavorites());
 
     // Check saved session
@@ -1675,132 +1633,10 @@ export default function App() {
     showToast(`¡Bienvenido, ${user.name}!`, "success");
   };
 
-  // If in Figma Canvas View Mode: Show 5 frames side by side!
-  if (viewMode === "canvas") {
-    return (
-      <div className="min-h-screen bg-slate-950 flex flex-col font-sans">
-        <DeviceToolbar
-          viewMode={viewMode}
-          onSetViewMode={setViewMode}
-          isOnline={isOnline}
-          onOpenPublish={handleOpenPublish}
-          onOpenTrades={() => setIsTradesOpen(true)}
-          onOpenPlayStore={() => setIsPlayStoreOpen(true)}
-          onOpenGuide={() => setIsGuideOpen(true)}
-        />
-        <div className="flex-1 p-8 flex gap-8 overflow-x-auto items-start">
-          <div className="flex-shrink-0">
-            <span className="text-white text-xs font-bold block mb-2">Pantalla 1: Inicio de Sesión</span>
-            <DeviceFrame viewMode="phone">
-              <LoginScreen onLoginSuccess={handleLoginSuccess} />
-            </DeviceFrame>
-          </div>
-          <div className="flex-shrink-0">
-            <span className="text-white text-xs font-bold block mb-2">Pantalla 2: Catálogo y Filtros</span>
-            <DeviceFrame viewMode="phone">
-              <HomeScreen
-                currentUser={currentUser}
-                onSelectProduct={(p) => { setSelectedProduct(p); setViewMode("phone"); }}
-                onOpenPublish={handleOpenPublish}
-                onTab={setActiveTab}
-                showToast={showToast}
-              />
-            </DeviceFrame>
-          </div>
-          <div className="flex-shrink-0">
-            <span className="text-white text-xs font-bold block mb-2">Pantalla 3: Detalle de Producto</span>
-            <DeviceFrame viewMode="phone">
-              <DetailScreen
-                product={selectedProduct || {
-                  id: 1,
-                  name: "PlayStation 5 Digital Edition",
-                  price: 8500,
-                  condition: "Excelente estado",
-                  category: "Consolas",
-                  acceptsBarter: true,
-                  img: "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=600&h=600&fit=crop&auto=format",
-                  description: "Consola cuidada y completamente funcional.",
-                  seller: { name: "Carlos M.", verified: true, rating: 4.8, sales: 48 },
-                  specs: [["Almacenamiento", "825 GB SSD NVMe"], ["Resolución", "4K HDR"]],
-                }}
-                onBack={() => {}}
-                onTrade={() => setActiveTab("trueques")}
-                onTab={setActiveTab}
-                showToast={showToast}
-                onDeleteProduct={handleDeleteProduct}
-                onEditProduct={(p) => { setProductToEdit(p); setIsPublishOpen(true); }}
-              />
-            </DeviceFrame>
-          </div>
-          <div className="flex-shrink-0">
-            <span className="text-white text-xs font-bold block mb-2">Pantalla 4: Proponer Trueque</span>
-            <DeviceFrame viewMode="phone">
-              <TradeScreen
-                targetProduct={tradeTarget || {
-                  id: 1,
-                  name: "PlayStation 5 Digital Edition",
-                  price: 8500,
-                  condition: "Excelente estado",
-                  category: "Consolas",
-                  acceptsBarter: true,
-                  img: "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=600&h=600&fit=crop&auto=format",
-                  description: "Consola en perfecto estado.",
-                  seller: { name: "Carlos M.", verified: true, rating: 4.8, sales: 48 },
-                }}
-                onBack={() => {}}
-                onTab={setActiveTab}
-                showToast={showToast}
-                onOpenTradesManager={() => setIsTradesOpen(true)}
-              />
-            </DeviceFrame>
-          </div>
-          <div className="flex-shrink-0">
-            <span className="text-white text-xs font-bold block mb-2">Pantalla 5: Subasta Activa</span>
-            <DeviceFrame viewMode="phone">
-              <AuctionScreen onTab={setActiveTab} showToast={showToast} />
-            </DeviceFrame>
-          </div>
-        </div>
-
-        {/* Global Modals */}
-        <ToastContainer toasts={toasts} onDismiss={(id) => setToasts((prev) => prev.filter((t) => t.id !== id))} />
-        <PublishProductModal
-          isOpen={isPublishOpen}
-          onClose={() => { setIsPublishOpen(false); setProductToEdit(null); }}
-          onCreated={handleProductCreated}
-          onUpdated={handleProductUpdated}
-          productToEdit={productToEdit}
-          showToast={showToast}
-        />
-        <TradesManagerModal isOpen={isTradesOpen} onClose={() => setIsTradesOpen(false)} showToast={showToast} />
-        <PlayStoreModal isOpen={isPlayStoreOpen} onClose={() => setIsPlayStoreOpen(false)} showToast={showToast} />
-        <EvaluatorGuideModal
-          isOpen={isGuideOpen}
-          onClose={() => setIsGuideOpen(false)}
-          showToast={showToast}
-          onOpenPublish={handleOpenPublish}
-          onOpenTrades={() => setIsTradesOpen(true)}
-          onOpenPlayStore={() => setIsPlayStoreOpen(true)}
-        />
-      </div>
-    );
-  }
-
-  // Interactive App Mode (Phone or Fullscreen)
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col font-sans select-none sm:select-auto">
-      <DeviceToolbar
-        viewMode={viewMode}
-        onSetViewMode={setViewMode}
-        isOnline={isOnline}
-        onOpenPublish={handleOpenPublish}
-        onOpenTrades={() => setIsTradesOpen(true)}
-        onOpenPlayStore={() => setIsPlayStoreOpen(true)}
-        onOpenGuide={() => setIsGuideOpen(true)}
-      />
-
-      <div className="flex-1 flex items-center justify-center p-0 sm:p-6 overflow-hidden">
-        <DeviceFrame viewMode={viewMode}>
+    <div className="min-h-dvh bg-slate-50 font-sans">
+      <div className="min-h-dvh flex justify-center">
+        <main className="w-full max-w-2xl min-h-dvh bg-white flex flex-col relative">
           {!isLoggedIn ? (
             <LoginScreen onLoginSuccess={handleLoginSuccess} />
           ) : selectedProduct ? (
@@ -1860,7 +1696,7 @@ export default function App() {
               }}
             />
           )}
-        </DeviceFrame>
+        </main>
       </div>
 
       {/* Global Modals & Toasts */}
@@ -1874,15 +1710,6 @@ export default function App() {
         showToast={showToast}
       />
       <TradesManagerModal isOpen={isTradesOpen} onClose={() => setIsTradesOpen(false)} showToast={showToast} />
-      <PlayStoreModal isOpen={isPlayStoreOpen} onClose={() => setIsPlayStoreOpen(false)} showToast={showToast} />
-      <EvaluatorGuideModal
-        isOpen={isGuideOpen}
-        onClose={() => setIsGuideOpen(false)}
-        showToast={showToast}
-        onOpenPublish={handleOpenPublish}
-        onOpenTrades={() => setIsTradesOpen(true)}
-        onOpenPlayStore={() => setIsPlayStoreOpen(true)}
-      />
     </div>
   );
 }
