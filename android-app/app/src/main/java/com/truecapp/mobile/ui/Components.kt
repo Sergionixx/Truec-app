@@ -12,12 +12,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.truecapp.mobile.data.local.ProductoEntity
+import com.truecapp.mobile.data.local.ProductPhotos
+import com.truecapp.mobile.R
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import java.math.BigDecimal
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
@@ -65,12 +74,6 @@ internal fun Page(title: String, active: Screen, navigate: (Screen) -> Unit, bac
         bottomBar = { BottomBar(active, navigate) }, content = content)
 }
 
-internal fun emoji(category: String) = when (category) {
-    "Celulares" -> "📱"; "Laptops" -> "💻"; "Consolas" -> "🎮"; "Audio" -> "🎧"; "Tablets" -> "📲"; else -> "🕹️"
-}
-internal fun productColor(category: String) = when (category) {
-    "Celulares" -> Color(0xFFD1FAE5); "Laptops" -> Color(0xFFEDE9FE); "Audio" -> Color(0xFFFEF3C7); else -> Color(0xFFDBEAFE)
-}
 internal fun money(cents: Long): String = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("es-MX")).format(BigDecimal.valueOf(cents, 2))
 internal fun amountText(cents: Long): String = BigDecimal.valueOf(cents, 2).toPlainString()
 internal fun dateText(millis: Long): String = SimpleDateFormat("dd MMM · HH:mm", Locale.forLanguageTag("es-MX")).format(Date(millis))
@@ -81,11 +84,36 @@ internal fun Badge(text: String) {
 }
 
 @Composable
-internal fun ProductCard(product: ProductoEntity, open: () -> Unit) {
+internal fun ProductPhoto(product: ProductoEntity, modifier: Modifier = Modifier) {
+    Photo(product.imagen.ifBlank { ProductPhotos.forCategory(product.categoria) }, product.nombre, modifier)
+}
+
+@Composable
+internal fun Photo(source: String, description: String, modifier: Modifier = Modifier) {
+    AsyncImage(model = ImageRequest.Builder(LocalContext.current).data(source).crossfade(true).build(),
+        contentDescription = "Foto de $description", contentScale = ContentScale.Crop,
+        placeholder = painterResource(R.drawable.ic_photo_placeholder),
+        error = painterResource(R.drawable.ic_photo_placeholder),
+        modifier = modifier.clip(RoundedCornerShape(16.dp)).background(Canvas).testTag("product-photo"))
+}
+
+@Composable
+internal fun ProductCard(product: ProductoEntity, tile: Boolean = false, open: () -> Unit) {
     ElevatedCard(Modifier.fillMaxWidth().clickable(onClick = open), shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.elevatedCardColors(containerColor = Color.White)) {
-        Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(78.dp).background(productColor(product.categoria), RoundedCornerShape(16.dp)), contentAlignment = Alignment.Center) { Text(emoji(product.categoria), fontSize = 36.sp) }
+        if (tile) {
+            Column {
+                ProductPhoto(product, Modifier.fillMaxWidth().aspectRatio(1.1f))
+                Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                    Text(product.categoria.uppercase(), fontSize = 10.sp, color = Muted)
+                    Text(product.nombre, fontWeight = FontWeight.Bold, maxLines = 2, minLines = 2, overflow = TextOverflow.Ellipsis, fontSize = 14.sp)
+                    Text(money(product.precioCentavos), color = Navy, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
+                    Text(product.condicion, fontSize = 11.sp, color = Muted)
+                    Badge(if (product.aceptaTrueque) "Acepta trueque" else "Compra")
+                }
+            }
+        } else Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+            ProductPhoto(product, Modifier.size(78.dp))
             Column(Modifier.weight(1f).padding(start = 14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(product.categoria.uppercase(), fontSize = 10.sp, color = Muted)
                 Text(product.nombre, fontWeight = FontWeight.Bold, maxLines = 2, overflow = TextOverflow.Ellipsis)

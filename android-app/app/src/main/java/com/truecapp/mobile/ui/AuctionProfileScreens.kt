@@ -44,8 +44,9 @@ internal fun AuctionScreen(ui: TruecUiState, vm: TruecViewModel, navigate: (Scre
     Page(if (closed) "Subasta finalizada" else "Subasta activa", Screen.Auction, navigate) { padding ->
         LazyColumn(Modifier.fillMaxSize().padding(padding).imePadding().testTag("auction"), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             item { Card(colors = CardDefaults.cardColors(containerColor = Navy), shape = RoundedCornerShape(24.dp)) {
+                product?.let { ProductPhoto(it, Modifier.fillMaxWidth().height(220.dp)) }
                 Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("${emoji(product?.categoria.orEmpty())} ${product?.nombre ?: "Artículo demo"}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                    Text(product?.nombre ?: "Artículo demo", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
                     Text("Puja más alta", color = Color.White.copy(alpha = .75f))
                     Text(money(top), color = Color.White, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold)
                     Text("${if (closed) "Ganador demo" else "Líder"}: ${leader?.nombre ?: "Sin pujas"}", color = Color.White)

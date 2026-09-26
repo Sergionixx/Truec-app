@@ -1,6 +1,7 @@
 package com.truecapp.mobile.data.local
 
 import androidx.room.Entity
+import androidx.room.ColumnInfo
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
@@ -26,7 +27,8 @@ data class ProductoEntity(
     val precioCentavos: Long,
     val descripcion: String = "Equipo cuidado y funcional. Incluye accesorios originales.",
     val aceptaTrueque: Boolean = true,
-    val activo: Boolean = true
+    val activo: Boolean = true,
+    @ColumnInfo(defaultValue = "''") val imagen: String = ""
 )
 
 @Entity(tableName = "propuestas", foreignKeys = [

@@ -31,7 +31,10 @@ internal fun TradeScreen(wanted: ProductoEntity, ui: TruecUiState, vm: TruecView
         LazyColumn(Modifier.fillMaxSize().padding(padding).imePadding().testTag("trade-form"), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             item { Text("1. El artículo que recibirás", fontWeight = FontWeight.Bold)
                 Card(Modifier.fillMaxWidth().padding(top = 10.dp), colors = CardDefaults.cardColors(containerColor = TealSoft)) {
-                    Column(Modifier.padding(16.dp)) { Text("${emoji(wanted.categoria)} ${wanted.nombre}", fontWeight = FontWeight.Bold); Text(money(wanted.precioCentavos), color = TealDark) }
+                    Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                        ProductPhoto(wanted, Modifier.size(70.dp))
+                        Column(Modifier.padding(start = 12.dp)) { Text(wanted.nombre, fontWeight = FontWeight.Bold); Text(money(wanted.precioCentavos), color = TealDark) }
+                    }
                 }
             }
             if (!eligible) item { Text("Este artículo no está disponible para recibir propuestas.", color = MaterialTheme.colorScheme.error) }
@@ -40,7 +43,7 @@ internal fun TradeScreen(wanted: ProductoEntity, ui: TruecUiState, vm: TruecView
                 OutlinedCard(Modifier.fillMaxWidth().clickable { selectedId = item.id },
                     colors = CardDefaults.outlinedCardColors(containerColor = if (selectedId == item.id) TealSoft else MaterialTheme.colorScheme.surface)) {
                     Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Text(emoji(item.categoria), fontSize = 28.sp)
+                        ProductPhoto(item, Modifier.size(56.dp))
                         Column(Modifier.weight(1f).padding(start = 12.dp)) { Text(item.nombre, fontWeight = FontWeight.Bold); Text(money(item.precioCentavos), color = Muted) }
                         RadioButton(selectedId == item.id, { selectedId = item.id })
                     }
@@ -82,9 +85,17 @@ internal fun ProposalsScreen(ui: TruecUiState, vm: TruecViewModel, sent: Boolean
                 ElevatedCard(shape = RoundedCornerShape(20.dp), modifier = Modifier.testTag("proposal-${proposal.id}")) {
                     Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { Text(user?.nombre ?: "Usuario demo", fontWeight = FontWeight.Bold); Badge(proposal.estado) }
-                        Text("Recibes: ${if (sent) wanted?.nombre else offered?.nombre}", fontWeight = FontWeight.SemiBold)
+                        val received = if (sent) wanted else offered
+                        val given = if (sent) offered else wanted
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            received?.let { ProductPhoto(it, Modifier.size(56.dp)) }
+                            Text("Recibes: ${received?.nombre}", Modifier.padding(start = 10.dp).weight(1f), fontWeight = FontWeight.SemiBold)
+                        }
                         Icon(Icons.Outlined.SwapHoriz, null, tint = Teal)
-                        Text("Ofreces: ${if (sent) offered?.nombre else wanted?.nombre}")
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            given?.let { ProductPhoto(it, Modifier.size(56.dp)) }
+                            Text("Ofreces: ${given?.nombre}", Modifier.padding(start = 10.dp).weight(1f))
+                        }
                         if (proposal.mensaje.isNotBlank()) Text(proposal.mensaje, color = Muted)
                         Text(dateText(proposal.fecha), color = Muted, fontSize = 11.sp)
                         if (proposal.estado == PENDING) Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {

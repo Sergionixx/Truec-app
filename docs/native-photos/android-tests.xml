@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuite name="com.truecapp.mobile.DemoUiTest" tests="22" failures="0" errors="0" skipped="0" time="56.873" timestamp="2026-09-26T20:29:00" hostname="localhost">
+  <properties>
+    <property name="device" value="SM-A115M - 12" />
+    <property name="flavor" value="" />
+    <property name="project" value=":app" />
+  </properties>
+  <testcase name="auctionRejectsInsufficientBidClosesAndResets" classname="com.truecapp.mobile.DemoUiTest" time="15.95" />
+  <testcase name="selectedProductTradeAndFavoritesReachPersistentLists" classname="com.truecapp.mobile.DemoUiTest" time="10.076" />
+  <testcase name="acceptingReceivedProposalUpdatesProfileCount" classname="com.truecapp.mobile.DemoUiTest" time="4.417" />
+  <testcase name="publicationCanBeCreatedRestoredEditedAndDeleted" classname="com.truecapp.mobile.DemoUiTest" time="12.291" />
+  <testcase name="proposalUsesSelectedProductAndRejectsDuplicateAndIneligibleProducts" classname="com.truecapp.mobile.RoomWorkflowTest" time="0.311" />
+  <testcase name="pricesKeepCentsAndRejectInvalidInputs" classname="com.truecapp.mobile.RoomWorkflowTest" time="0.157" />
+  <testcase name="explicitResetRecreatesDemoAndRestartsAuction" classname="com.truecapp.mobile.RoomWorkflowTest" time="0.257" />
+  <testcase name="acceptingProposalArchivesProductsAndCancelsCompetingProposalsAtomically" classname="com.truecapp.mobile.RoomWorkflowTest" time="0.132" />
+  <testcase name="competingEqualBidsCannotBothSucceed" classname="com.truecapp.mobile.RoomWorkflowTest" time="0.106" />
+  <testcase name="bidsPersistAndRejectInsufficientDuplicateAndExpiredOffers" classname="com.truecapp.mobile.RoomWorkflowTest" time="0.132" />
+  <testcase name="favoritesAreUniqueAndCascadeWhenOwnProductIsDeleted" classname="com.truecapp.mobile.RoomWorkflowTest" time="0.132" />
+  <testcase name="referencedProductIsArchivedAndPendingProposalsCancelled" classname="com.truecapp.mobile.RoomWorkflowTest" time="0.08" />
+  <testcase name="observableDataReflectsEditsNotOnlyRowCounts" classname="com.truecapp.mobile.RoomWorkflowTest" time="0.107" />
+  <testcase name="permissionsAndForeignKeysRejectInvalidChanges" classname="com.truecapp.mobile.RoomWorkflowTest" time="0.105" />
+  <testcase name="productCrudPersistsAcrossReopenAndDoesNotReseed" classname="com.truecapp.mobile.RoomWorkflowTest" time="0.207" />
+  <testcase name="generatedIdsQueriesAndPersistence" classname="com.truecapp.mobile.UserRegistrationTest" time="0.079" />
+  <testcase name="everyRequiredFieldRejectsEmptyAndWhitespace" classname="com.truecapp.mobile.UserRegistrationTest" time="5.99" />
+  <testcase name="databaseInstanceIsShared" classname="com.truecapp.mobile.UserRegistrationTest" time="0.003" />
+  <testcase name="everyBundledPhotoDecodesWithoutNetwork" classname="com.truecapp.mobile.NativePhotosTest" time="0.234" />
+  <testcase name="photoSourcesSurviveEditsAndDatabaseReopen" classname="com.truecapp.mobile.NativePhotosTest" time="0.232" />
+  <testcase name="versionOneUpgradePreservesAllWorkflowsAndAddsPhotos" classname="com.truecapp.mobile.NativePhotosTest" time="0.232" />
+  <testcase name="launcherOpensNativeMarketplace" classname="com.truecapp.mobile.NativePhotosTest" time="0.003" />
+</testsuite>

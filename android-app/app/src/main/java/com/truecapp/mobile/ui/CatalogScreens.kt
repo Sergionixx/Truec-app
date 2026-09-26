@@ -1,5 +1,9 @@
 package com.truecapp.mobile.ui
 
+import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,6 +26,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.ImeAction
@@ -31,9 +36,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.truecapp.mobile.data.local.*
 import com.truecapp.mobile.data.repository.TruecRepository
+import com.truecapp.mobile.MainActivity
 
 @Composable
 internal fun LoginScreen(login: () -> Unit) {
+    val context = LocalContext.current
     var email by rememberSaveable { mutableStateOf("demo@truec.app") }
     var password by rememberSaveable { mutableStateOf("demo123") }
     var error by rememberSaveable { mutableStateOf("") }
@@ -62,6 +69,7 @@ internal fun LoginScreen(login: () -> Unit) {
             }
         }
         TextButton(onClick = { email = "demo@truec.app"; password = "demo123"; error = "" }) { Text("Completar cuenta de ejemplo") }
+        TextButton(onClick = { context.startActivity(Intent(context, MainActivity::class.java)) }) { Text("Registro de usuarios") }
         Badge("Demostración académica · sin conexión")
         Text("Los datos son ficticios. Tus cambios se conservan en este dispositivo.", color = Muted, fontSize = 13.sp, textAlign = TextAlign.Center)
     }
@@ -70,27 +78,70 @@ internal fun LoginScreen(login: () -> Unit) {
 @Composable
 internal fun HomeScreen(products: List<ProductoEntity>, query: String, setQuery: (String) -> Unit,
     category: String, setCategory: (String) -> Unit, open: (ProductoEntity) -> Unit, navigate: (Screen) -> Unit, publish: () -> Unit) {
-    val filtered = products.filter { (category == "Todos" || it.categoria == category) && it.nombre.contains(query.trim(), true) }
+    var filters by rememberSaveable { mutableStateOf(false) }
+    var barterOnly by rememberSaveable { mutableStateOf(false) }
+    var condition by rememberSaveable { mutableStateOf("Todas") }
+    var minimum by rememberSaveable { mutableStateOf("") }
+    var maximum by rememberSaveable { mutableStateOf("") }
+    var sort by rememberSaveable { mutableStateOf("Recientes") }
+    val minCents = minimum.takeIf { it.isNotBlank() }?.let { TruecRepository.parseCents(it) }
+    val maxCents = maximum.takeIf { it.isNotBlank() }?.let { TruecRepository.parseCents(it) }
+    val priceError = (minimum.isNotBlank() && minCents == null) || (maximum.isNotBlank() && maxCents == null) ||
+        (minCents != null && maxCents != null && minCents > maxCents)
+    val matches = products.filter { (category == "Todos" || it.categoria == category) &&
+        (it.nombre.contains(query.trim(), true) || it.descripcion.contains(query.trim(), true)) &&
+        (!barterOnly || it.aceptaTrueque) && (condition == "Todas" || it.condicion == condition) &&
+        (minCents == null || it.precioCentavos >= minCents) && (maxCents == null || it.precioCentavos <= maxCents) }
+    val filtered = when (sort) {
+        "Menor precio" -> matches.sortedBy { it.precioCentavos }
+        "Mayor precio" -> matches.sortedByDescending { it.precioCentavos }
+        else -> matches.sortedByDescending { it.id }
+    }
     Page("Hola, Sergio", Screen.Home, navigate, actions = {
         IconButton(onClick = publish) { Icon(Icons.Outlined.AddCircleOutline, "Publicar producto") }
     }) { padding ->
-        LazyColumn(Modifier.fillMaxSize().padding(padding).testTag("catalog"), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            item { OutlinedTextField(query, setQuery, placeholder = { Text("Buscar tecnología…") },
-                leadingIcon = { Icon(Icons.Outlined.Search, null) }, singleLine = true,
-                modifier = Modifier.fillMaxWidth().testTag("search"), shape = RoundedCornerShape(16.dp)) }
-            item { LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(listOf("Todos") + TruecRepository.CATEGORIES) { label -> FilterChip(category == label, { setCategory(label) }, { Text(label) }) }
-            } }
-            item { Card(colors = CardDefaults.cardColors(containerColor = Navy), shape = RoundedCornerShape(22.dp)) {
-                Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("Intercambia, no acumules", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                    Text("Publica lo que ya no usas y encuentra tu próximo equipo.", color = Color.White.copy(alpha = .8f))
-                    FilledTonalButton(onClick = publish) { Icon(Icons.Outlined.Add, null); Text(" Publicar un producto") }
+        BoxWithConstraints(Modifier.fillMaxSize().padding(padding)) {
+            val columns = if (maxWidth < 330.dp) 1 else if (maxWidth < 600.dp) 2 else 3
+            LazyColumn(Modifier.fillMaxSize().testTag("catalog"), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                item { OutlinedTextField(query, setQuery, placeholder = { Text("Buscar tecnología…") },
+                    leadingIcon = { Icon(Icons.Outlined.Search, null) }, singleLine = true,
+                    modifier = Modifier.fillMaxWidth().testTag("search"), shape = RoundedCornerShape(16.dp)) }
+                item { Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text("Encuentra tu próximo equipo", color = Muted, fontSize = 12.sp)
+                    TextButton(onClick = { filters = !filters }) { Icon(Icons.Outlined.Tune, null); Text(" Filtros") }
+                } }
+                if (filters) item {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) { Text("Solo trueque", Modifier.weight(1f)); Switch(barterOnly, { barterOnly = it }) }
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) { items(listOf("Todas") + TruecRepository.CONDITIONS) { label -> FilterChip(condition == label, { condition = label }, { Text(label) }) } }
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedTextField(minimum, { minimum = it.take(12) }, label = { Text("Precio mínimo") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), modifier = Modifier.weight(1f))
+                            OutlinedTextField(maximum, { maximum = it.take(12) }, label = { Text("Precio máximo") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), modifier = Modifier.weight(1f))
+                        }
+                        if (priceError) Text("Usa precios positivos y un mínimo menor o igual al máximo.", color = MaterialTheme.colorScheme.error)
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) { items(listOf("Recientes", "Menor precio", "Mayor precio")) { label -> FilterChip(sort == label, { sort = label }, { Text(label) }) } }
+                        TextButton(onClick = { barterOnly = false; condition = "Todas"; minimum = ""; maximum = ""; sort = "Recientes"; setCategory("Todos"); setQuery("") }) { Text("Limpiar filtros") }
+                    }
                 }
-            } }
-            item { Text("${filtered.size} productos disponibles", fontWeight = FontWeight.Bold) }
-            items(filtered, key = { it.id }) { product -> ProductCard(product) { open(product) } }
-            if (filtered.isEmpty()) item { EmptyState("Sin resultados", "Prueba otra búsqueda o categoría.") }
+                item { LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(listOf("Todos") + TruecRepository.CATEGORIES) { label -> FilterChip(category == label, { setCategory(label) }, { Text(label) }) }
+                } }
+                item { Card(colors = CardDefaults.cardColors(containerColor = Navy), shape = RoundedCornerShape(22.dp)) {
+                    Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Text("Intercambia, no acumules", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                        Text("Publica lo que ya no usas y encuentra tu próximo equipo.", color = Color.White.copy(alpha = .8f))
+                        FilledTonalButton(onClick = publish) { Icon(Icons.Outlined.Add, null); Text(" Publicar un producto") }
+                    }
+                } }
+                item { Text("${filtered.size} productos disponibles", fontWeight = FontWeight.Bold) }
+                items(filtered.chunked(columns), key = { row -> row.joinToString("-") { it.id.toString() } }) { row ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        row.forEach { product -> Box(Modifier.weight(1f)) { ProductCard(product, tile = true) { open(product) } } }
+                        repeat(columns - row.size) { Spacer(Modifier.weight(1f)) }
+                    }
+                }
+                if (filtered.isEmpty()) item { EmptyState("Sin resultados", "Prueba otra búsqueda o categoría.") }
+            }
         }
     }
 }
@@ -108,7 +159,7 @@ internal fun DetailScreen(product: ProductoEntity, ui: TruecUiState, vm: TruecVi
         }) { Icon(if (favorite) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder, if (favorite) "Quitar favorito" else "Guardar favorito", tint = Teal) }
     }) { padding ->
         LazyColumn(Modifier.fillMaxSize().padding(padding).testTag("detail"), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
-            item { Box(Modifier.fillMaxWidth().height(190.dp).background(productColor(product.categoria), RoundedCornerShape(24.dp)), contentAlignment = Alignment.Center) { Text(emoji(product.categoria), fontSize = 90.sp) } }
+            item { ProductPhoto(product, Modifier.fillMaxWidth().height(260.dp)) }
             item {
                 Badge(if (product.activo) product.condicion else "Publicación archivada")
                 Text(product.nombre, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 12.dp))
@@ -150,6 +201,7 @@ internal fun DetailScreen(product: ProductoEntity, ui: TruecUiState, vm: TruecVi
 @Composable
 internal fun EditorScreen(product: ProductoEntity?, busy: Boolean, navigate: (Screen) -> Unit, back: () -> Unit, save: (ProductoEntity) -> Unit) {
     val focusManager = LocalFocusManager.current
+    val context = LocalContext.current
     var name by rememberSaveable(product?.id) { mutableStateOf(product?.nombre.orEmpty()) }
     var price by rememberSaveable(product?.id) { mutableStateOf(product?.let { amountText(it.precioCentavos) }.orEmpty()) }
     var description by rememberSaveable(product?.id) { mutableStateOf(product?.descripcion.orEmpty()) }
@@ -157,9 +209,33 @@ internal fun EditorScreen(product: ProductoEntity?, busy: Boolean, navigate: (Sc
     var condition by rememberSaveable(product?.id) { mutableStateOf(product?.condicion ?: "Buen estado") }
     var barter by rememberSaveable(product?.id) { mutableStateOf(product?.aceptaTrueque ?: true) }
     var error by rememberSaveable { mutableStateOf("") }
+    var photo by rememberSaveable(product?.id) { mutableStateOf(product?.imagen.orEmpty()) }
+    var photoUrl by rememberSaveable(product?.id) { mutableStateOf(product?.imagen?.takeIf { it.startsWith("https://") }.orEmpty()) }
+    val picker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null) {
+            try {
+                context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                photo = uri.toString(); photoUrl = ""; error = ""
+            } catch (_: SecurityException) {
+                error = "No se pudo conservar acceso a la foto. Selecciona otra imagen."
+            }
+        }
+    }
     Page(if (product == null) "Publicar producto" else "Editar producto", Screen.Profile, navigate, back) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).imePadding().verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) { Text(emoji(category), fontSize = 48.sp); Text("Imagen de ejemplo según categoría", Modifier.padding(start = 12.dp), color = Muted, fontSize = 13.sp) }
+            Photo(photo.ifBlank { ProductPhotos.forCategory(category) }, name.ifBlank { "tu publicación" }, Modifier.fillMaxWidth().height(170.dp))
+            OutlinedButton(enabled = !busy, onClick = { picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }, modifier = Modifier.fillMaxWidth().testTag("pick-photo")) {
+                Icon(Icons.Outlined.AddPhotoAlternate, null); Text(" Elegir foto del dispositivo")
+            }
+            Text("O elige una foto de ejemplo", color = Muted, fontSize = 12.sp)
+            LazyRow(Modifier.testTag("photo-presets"), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(ProductPhotos.presets) { (label, source) ->
+                    FilterChip(photo == source, { photo = source; photoUrl = "" }, { Text(label) })
+                }
+            }
+            OutlinedTextField(photoUrl, { photoUrl = it.trim(); photo = photoUrl }, label = { Text("URL de foto HTTPS (opcional)") },
+                singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }), modifier = Modifier.fillMaxWidth().testTag("photo-url"))
             OutlinedTextField(name, { name = it.take(80) }, label = { Text("Nombre del producto") }, singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done), keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
                 modifier = Modifier.fillMaxWidth().testTag("product-name"))
@@ -175,13 +251,16 @@ internal fun EditorScreen(product: ProductoEntity?, busy: Boolean, navigate: (Sc
             if (error.isNotEmpty()) Text(error, color = MaterialTheme.colorScheme.error)
             Button(enabled = !busy, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp).testTag("save-product"), onClick = {
                 val cents = TruecRepository.parseCents(price)
-                if (name.trim().length < 2) error = "Escribe un nombre de al menos 2 caracteres."
-                else if (cents == null) error = "Escribe un precio positivo con hasta dos decimales."
-                else {
+                if (name.trim().length < 2) {
+                    error = "Escribe un nombre de al menos 2 caracteres."
+                } else if (cents == null) {
+                    error = "Escribe un precio positivo con hasta dos decimales."
+                } else {
                     error = ""
                     focusManager.clearFocus()
                     save(ProductoEntity(id = product?.id ?: 0, nombre = name, categoria = category, condicion = condition,
-                        precioCentavos = cents, descripcion = description, aceptaTrueque = barter))
+                        precioCentavos = cents, descripcion = description, aceptaTrueque = barter,
+                        imagen = photo.ifBlank { ProductPhotos.forCategory(category) }))
                 }
             }) { Text(if (busy) "Guardando…" else "Guardar producto") }
         }

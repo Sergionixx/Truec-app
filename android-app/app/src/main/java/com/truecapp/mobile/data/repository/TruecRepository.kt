@@ -44,7 +44,7 @@ class TruecRepository(private val db: TruecDatabase, private val clock: () -> Lo
             ProductoEntity(6, 1, "iPhone 12 Pro", "Celulares", "Excelente", 720000),
             ProductoEntity(7, 1, "AirPods Pro 2", "Audio", "Como nuevo", 350000),
             ProductoEntity(8, 1, "iPad Air 5", "Tablets", "Buen estado", 980000)
-        ).forEach { dao.insertarProducto(it) }
+        ).forEach { product -> dao.insertarProducto(product.copy(imagen = ProductPhotos.seedPhotos.first { it.first == product.id }.third)) }
         dao.insertarSubasta(SubastaEntity(1, 1, 300000, now + 300_000))
         dao.insertarPuja(PujaEntity(subastaId = 1, usuarioId = 3, montoCentavos = 350000, fecha = now))
         dao.insertarPropuesta(PropuestaEntity(emisorId = 2, receptorId = 1, deseadoId = 6, ofrecidoId = 4,
@@ -65,8 +65,12 @@ class TruecRepository(private val db: TruecDatabase, private val clock: () -> Lo
         require(value.categoria in CATEGORIES && value.condicion in CONDITIONS) { "Selecciona categoría y condición válidas." }
         require(value.precioCentavos in 1..MAX_CENTS) { "El precio debe ser mayor que cero y no superar $1,000,000." }
         require(value.descripcion.length <= 600) { "La descripción admite hasta 600 caracteres." }
+        val image = value.imagen.trim()
+        require(image.isBlank() || image in ProductPhotos.presets.map { it.second } ||
+            (image.startsWith("content://") && android.net.Uri.parse(image).authority?.isNotBlank() == true) ||
+            (image.startsWith("https://") && android.net.Uri.parse(image).host?.isNotBlank() == true)) { "Selecciona una foto o usa un enlace HTTPS válido." }
         require(value.propietarioId == DEMO_USER_ID) { "Solo puedes editar tus publicaciones." }
-        val clean = value.copy(nombre = value.nombre.trim(), descripcion = value.descripcion.trim())
+        val clean = value.copy(nombre = value.nombre.trim(), descripcion = value.descripcion.trim(), imagen = image)
         if (value.id == 0L) dao.insertarProducto(clean) else {
             val saved = requireNotNull(dao.producto(value.id)) { "La publicación ya no existe." }
             require(saved.propietarioId == DEMO_USER_ID && saved.activo) { "Esta publicación no se puede editar." }
