@@ -1,6 +1,8 @@
 ﻿# Truec-app 1.3.0
 
-Proyecto académico integrado: Android nativo con Jetpack Compose y Room, y una aplicación web con API local. La versión Android 1.4.0 integra la interfaz fotográfica de Victor en el marketplace nativo.
+La interfaz principal es el frontend React + Vite de `Victor` (origen: `0ef41f4`). Los arreglos de validación, permisos, propuestas, subastas y accesibilidad se aplican sobre esa interfaz en la rama actual.
+
+Android muestra el mismo frontend empaquetado en una WebView y guarda sus operaciones localmente mediante Room. Es una app híbrida: las pantallas principales son React, y no una reconstrucción visual en Compose. El botón Run de Android Studio compila Vite automáticamente antes de empaquetar el APK; se requiere Node.js y `npm ci` en la raíz del repositorio.
 
 ## Ejecutar la web
 
@@ -36,11 +38,13 @@ cd android-app
 
 En Windows utilizar `gradlew.bat`. El APK está en `android-app/app/build/outputs/apk/debug/app-debug.apk`. La variante de demostración utiliza `com.truecapp.mobile.demo`, para coexistir con la versión anterior.
 
-La aplicación abre DemoActivity, el marketplace nativo con catálogo fotográfico adaptable, búsqueda, filtros de precio/condición/trueque, favoritos, inventario, edición, propuestas y subastas persistentes. Las fotos de ejemplo proceden de Victor y se incluyen en el APK; funcionan sin conexión desde la primera apertura. Se pueden elegir fotos con el selector del sistema Android (sin permisos generales de galería), seleccionar ejemplos o usar enlaces HTTPS. El acceso a las fotos seleccionadas se conserva al reiniciar la app. Si se elimina o revoca el acceso a una foto, se muestra un marcador de imagen; los enlaces remotos requieren conexión.
+La aplicación abre `WebMarketplaceActivity` y ejecuta el frontend de Victor desde los assets del APK. Las llamadas a `/api/` se resuelven mediante un puente Android hacia Room, sin servidor externo. Las imágenes de ejemplo se empaquetan para funcionar sin conexión. La barra de demostración y el marco de teléfono no aparecen en la interfaz. Los cambios de pantallas se realizan en `src/App.tsx` y sus componentes; `npm run build:native` permite generar el paquete manualmente.
+
+El marketplace Compose anterior se conserva en `DemoActivity` para sus pruebas y datos existentes. Su base `truec.db` y la base del frontend `victor_marketplace.db` son independientes; no se transfieren automáticamente los datos previos.
 
 Room migra `truec.db` de la versión 1 a la 2 para guardar la imagen de cada producto, conservando publicaciones, favoritos, propuestas y pujas. No borra ni restablece los datos al actualizar el APK.
 
-Desde el login se accede a «Registro de usuarios». MainActivity conserva el formulario nombre, apellidos, dirección y teléfono. Valida campos vacíos y espacios; inserta mediante lifecycleScope y Dispatchers.IO. User, UserDao y AppDatabase implementan la entidad, las consultas y el singleton Room. Este registro académico sigue separado de la cuenta demo del marketplace.
+El login React permite crear cuentas del marketplace. `MainActivity` conserva el formulario académico separado con nombre, apellidos, dirección y teléfono, pero no se expone como botón de desarrollo en la interfaz principal.
 
 Android funciona sin servidor. Las personas y operaciones del marketplace son ejemplos. No se realizan compras ni pagos reales.
 

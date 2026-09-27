@@ -23,7 +23,6 @@ const C = {
   danger: "#EF4444",
 };
 
-// ─── Shared Mobile Shell ─────────────────────────────────────────────────────
 // ─── Bottom Navigation ───────────────────────────────────────────────────────
 function BottomNav({
   active,
@@ -1562,6 +1561,17 @@ export default function App() {
   const [isPublishOpen, setIsPublishOpen] = useState(false);
   const [isTradesOpen, setIsTradesOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
+
+  useEffect(() => {
+    window.__truecBack = () => {
+      if (isPublishOpen) { setIsPublishOpen(false); setProductToEdit(null); return true; }
+      if (isTradesOpen) { setIsTradesOpen(false); return true; }
+      if (selectedProduct) { setSelectedProduct(null); return true; }
+      if (activeTab !== "inicio") { setActiveTab("inicio"); return true; }
+      return false;
+    };
+    return () => { delete window.__truecBack; };
+  }, [isPublishOpen, isTradesOpen, selectedProduct, activeTab]);
 
   const handleOpenPublish = () => {
     setProductToEdit(null);

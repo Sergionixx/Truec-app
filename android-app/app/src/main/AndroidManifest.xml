@@ -7,8 +7,9 @@
         android:label="Truec-app"
         android:theme="@style/Theme.TruecApp">
         <activity android:name=".MainActivity" android:exported="false" />
+        <activity android:name=".DemoActivity" android:exported="false" />
         <activity
-            android:name=".DemoActivity"
+            android:name=".WebMarketplaceActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

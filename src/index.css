@@ -7,6 +7,12 @@ body,
   height: 100%;
 }
 
+/* The same Victor frontend fills the Android WebView without a device mockup. */
+html.native-app, html.native-app body, html.native-app #root { height: 100%; overflow: hidden; }
+html.native-app #root > div, html.native-app #root > div > div { height: 100%; min-height: 0; }
+html.native-app main { height: 100%; min-height: 0; max-width: none; overflow: hidden; }
+html.native-app main > div { min-height: 0; }
+
 button:focus-visible, [role="button"]:focus-visible, a:focus-visible { outline: 3px solid #1e40af; outline-offset: 3px; }
 [hidden] { display: none !important; }
 @theme { --color-teal-600: #00796b; }

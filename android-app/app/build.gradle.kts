@@ -19,7 +19,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    buildFeatures { compose = true }
+    buildFeatures { compose = true; buildConfig = true }
     buildTypes {
         getByName("debug") { applicationIdSuffix = ".demo"; versionNameSuffix = "-demo" }
     }
@@ -37,6 +37,7 @@ dependencies {
     implementation(composeBom)
     androidTestImplementation(composeBom)
     implementation("androidx.activity:activity-compose:1.10.1")
+    implementation("androidx.webkit:webkit:1.12.1")
     implementation("io.coil-kt:coil-compose:2.7.0")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended")
@@ -57,3 +58,22 @@ dependencies {
 }
 
 android.sourceSets.getByName("androidTest").assets.srcDir("$projectDir/schemas")
+
+// Android Studio Run always packages the current Vite sources.
+val webProject = rootProject.projectDir.parentFile
+val bundleVictorFrontend by tasks.registering(Exec::class) {
+    workingDir(webProject)
+    if (System.getProperty("os.name").startsWith("Windows")) {
+        commandLine("cmd", "/c", "npm", "run", "build:native")
+    } else {
+        commandLine("npm", "run", "build:native")
+    }
+    inputs.dir(webProject.resolve("src"))
+    inputs.dir(webProject.resolve("public"))
+    inputs.files(webProject.resolve("index.html"), webProject.resolve("package.json"),
+        webProject.resolve("vite.native.config.ts"), webProject.resolve("scripts/native-photos.ts"),
+        webProject.resolve("scripts/package-native.mjs"), webProject.resolve("server/data.json"))
+    outputs.dir(projectDir.resolve("src/main/assets/web"))
+    outputs.file(projectDir.resolve("src/main/assets/native-seed.json"))
+}
+tasks.named("preBuild") { dependsOn(bundleVictorFrontend) }
