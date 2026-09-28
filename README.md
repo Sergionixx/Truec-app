@@ -40,11 +40,11 @@ En Windows utilizar `gradlew.bat`. El APK está en `android-app/app/build/output
 
 La aplicación abre `WebMarketplaceActivity` y ejecuta el frontend de Victor desde los assets del APK. Las llamadas a `/api/` se resuelven mediante un puente Android hacia Room, sin servidor externo. Las imágenes de ejemplo se empaquetan para funcionar sin conexión. La barra de demostración y el marco de teléfono no aparecen en la interfaz. Los cambios de pantallas se realizan en `src/App.tsx` y sus componentes; `npm run build:native` permite generar el paquete manualmente.
 
-El marketplace Compose anterior se conserva en `DemoActivity` para sus pruebas y datos existentes. Su base `truec.db` y la base del frontend `victor_marketplace.db` son independientes; no se transfieren automáticamente los datos previos.
+Las pantallas Compose y el formulario XML anteriores se retiraron del módulo Android. `WebMarketplaceActivity` es la única pantalla funcional; `MainActivity` se conserva únicamente como redirección para configuraciones antiguas de Android Studio. La base del frontend es `victor_marketplace.db`.
 
 Room migra `truec.db` de la versión 1 a la 2 para guardar la imagen de cada producto, conservando publicaciones, favoritos, propuestas y pujas. No borra ni restablece los datos al actualizar el APK.
 
-El login React permite crear cuentas del marketplace. `MainActivity` conserva el formulario académico separado con nombre, apellidos, dirección y teléfono, pero no se expone como botón de desarrollo en la interfaz principal.
+El login React permite crear cuentas del marketplace desde la pestaña `Crear Cuenta`.
 
 Android funciona sin servidor. Las personas y operaciones del marketplace son ejemplos. No se realizan compras ni pagos reales.
 

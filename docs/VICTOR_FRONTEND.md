@@ -8,7 +8,7 @@ Android Studio ejecuta `bundleVictorFrontend` antes de `preBuild`, por lo que Ru
 
 El puente `src/native/bridge.ts` envía las solicitudes `/api/` a `WebMarketplace`, que valida las operaciones y las conserva con Room en `victor_marketplace.db`. La implementación web sigue usando la API Node mediante el mismo frontend. Las fotos de ejemplo se incluyen en el APK. La barra de demostración y el marco de dispositivo no se renderizan.
 
-Esta entrega Android es híbrida (React en WebView y Room en Kotlin). El marketplace Compose anterior y su base `truec.db` se conservan, pero no son la pantalla inicial ni comparten automáticamente sus datos con el nuevo frontend.
+Esta entrega Android es híbrida (React en WebView y Room en Kotlin). Las pantallas Compose y XML anteriores se retiraron para que Android Studio no pueda volver a seleccionar otra interfaz. `MainActivity` solo redirige a `WebMarketplaceActivity` para compatibilidad con configuraciones antiguas.
 
 Pruebas relevantes:
 

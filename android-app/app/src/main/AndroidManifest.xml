@@ -6,8 +6,8 @@
         android:icon="@drawable/ic_truec"
         android:label="Truec-app"
         android:theme="@style/Theme.TruecApp">
-        <activity android:name=".MainActivity" android:exported="false" />
-        <activity android:name=".DemoActivity" android:exported="false" />
+        <!-- Compatibility target for stale Android Studio Run configurations. -->
+        <activity android:name=".MainActivity" android:exported="true" />
         <activity
             android:name=".WebMarketplaceActivity"
             android:exported="true">

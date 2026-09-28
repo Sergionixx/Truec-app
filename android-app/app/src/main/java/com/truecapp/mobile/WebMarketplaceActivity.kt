@@ -1,6 +1,5 @@
 package com.truecapp.mobile
 
-import android.content.Intent
 import android.os.Bundle
 import android.webkit.*
 import android.widget.TextView
@@ -52,7 +51,7 @@ class WebMarketplaceActivity : ComponentActivity() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean =
                 request.url.scheme != "https" || request.url.host != "appassets.androidplatform.net"
         }
-        // Only the bundled main frame can call Room or open the academic registration activity.
+        // Only the bundled main frame can call the local Room-backed API.
         WebViewCompat.addWebMessageListener(webView, "TruecNative", setOf(origin)) { _, message, source, mainFrame, reply ->
             if (!mainFrame || source.toString() != origin) return@addWebMessageListener
             val raw = message.data ?: return@addWebMessageListener
@@ -63,10 +62,7 @@ class WebMarketplaceActivity : ComponentActivity() {
             lifecycleScope.launch {
                 try {
                     val path = request.getString("path")
-                    val response = if (path == "/native/registration") {
-                        startActivity(Intent(this@WebMarketplaceActivity, MainActivity::class.java))
-                        JSONObject().put("id", id).put("status", 200).put("body", JSONObject().put("ok", true))
-                    } else withContext(Dispatchers.IO) {
+                    val response = withContext(Dispatchers.IO) {
                         val result = api.request(path, request.optString("method", "GET"),
                             request.optJSONObject("body") ?: JSONObject(), request.optString("token"))
                         JSONObject().put("id", id).put("status", result.status).put("body", result.body)

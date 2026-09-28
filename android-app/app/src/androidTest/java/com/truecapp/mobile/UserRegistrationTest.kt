@@ -1,13 +1,8 @@
 package com.truecapp.mobile
 
 import androidx.room.Room
-import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.action.ViewActions.*
-import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.ViewMatchers.*
 import android.content.Context
 import com.truecapp.mobile.data.registration.AppDatabase
 import com.truecapp.mobile.data.registration.User
@@ -46,22 +41,4 @@ class UserRegistrationTest {
         assertSame(AppDatabase.getInstance(context), AppDatabase.getInstance(context))
     }
 
-    @Test fun everyRequiredFieldRejectsEmptyAndWhitespace() = runBlocking {
-        val dao = AppDatabase.getInstance(context).userDao()
-        val before = dao.count()
-        val ids = listOf(R.id.nombre, R.id.apellidos, R.id.direccion, R.id.telefono)
-        ActivityScenario.launch(MainActivity::class.java).use {
-            for (missing in ids) {
-                for (empty in listOf("", "   ")) {
-                    for (id in ids) {
-                        onView(withId(id)).perform(scrollTo(), replaceText(if (id == missing) empty else "123"), closeSoftKeyboard())
-                    }
-                    onView(withId(R.id.guardar)).perform(scrollTo(), click())
-                    onView(withId(missing)).check(matches(hasErrorText(context.getString(R.string.required))))
-                    onView(withId(R.id.resultado)).check(matches(withText(R.string.validation_error)))
-                }
-            }
-        }
-        assertEquals(before, dao.count())
-    }
 }
