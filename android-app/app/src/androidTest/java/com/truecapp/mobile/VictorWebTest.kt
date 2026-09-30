@@ -53,6 +53,9 @@ class VictorWebTest {
             assertEquals(1, api.request("/api/trades", token = token).body.getJSONArray("trades").length())
             assertEquals(200, api.request("/api/login", "POST", JSONObject()
                 .put("email", "new@example.com").put("password", "secret123")).status)
+            assertEquals(200, api.request("/api/products/$id", "DELETE", token = token).status)
+            val afterDeletion = api.request("/api/products").body.getJSONArray("products")
+            assertFalse((0 until afterDeletion.length()).any { afterDeletion.getJSONObject(it).getLong("id") == id })
         } finally { db.close(); context.deleteDatabase(name) }
     }
 

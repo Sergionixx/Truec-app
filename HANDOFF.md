@@ -1,34 +1,28 @@
-# Truec-app handoff
+﻿# Truec-app handoff
 
-Last updated: 2026-09-27, America/Mexico_City
+Last updated: 2026-09-30 14:50, America/Mexico_City
 
 ## Current objective
 
-Use the image-rich React + Vite frontend from `Victor` as the Android app's visible marketplace, including its account creation flow. Avoid launching the older Compose marketplace.
+Keep the Victor image-rich React/Vite marketplace as the only Android frontend, and make product deletion work in the app opened by Android Studio.
 
-## Verified progress
+## Verified state
 
-- Current branch: `codex/rubrica-integrada`.
-- `WebMarketplaceActivity` is the only launcher in `android-app/app/src/main/AndroidManifest.xml`.
-- Android packages the Vite output through `bundleVictorFrontend` before `preBuild`; the bridge sends `/api/` requests to Room-backed `WebMarketplace`.
-- `VictorFrontendUiTest` passed on the connected `SM-A115M`: React login, catalog, local product images, and native bridge.
-- `VictorWebTest` passed for Room-backed registration, permissions, persistence, and bids.
-- `npm run typecheck`, `npm run build`, and `npm test` passed.
-- Commit `f1228cc` is on `origin/codex/rubrica-integrada`.
+- Branch: `codex/rubrica-integrada`; Android Studio opens `C:\Users\sergi\AndroidStudioProjects\Truec-app\android-app`. The Codex checkout is `C:\Users\sergi\Documents\ChatGPT\Truec-app`.
+- `WebMarketplaceActivity` is the launcher. It packages the Victor frontend in an Android WebView and routes `/api/` calls to Room through `WebMarketplace`.
+- Product deletion was blocked because `src/App.tsx` requires `window.confirm`, while `WebMarketplaceActivity` had no `WebChromeClient`; Android WebView then returned false without showing the dialog.
+- `WebMarketplaceActivity` now sets `WebChromeClient()`. The `VictorFrontendUiTest` confirmation test passed on the connected Samsung SM-A115M: the dialog appeared and accepting it returned true to JavaScript.
+- `VictorWebTest` passed on the Samsung: deleting an owned product returned 200 and the next catalog GET omitted it.
+- `:app:connectedDebugAndroidTest` succeeded for each targeted test. The debug APK was built in the Android Studio checkout, reinstalled on the Samsung, and `WebMarketplaceActivity` launched cold with `Status: ok`.
 
-## Latest change
+## Constraints and separate issues
 
-Retiré el frontend Compose anterior, sus pruebas de UI y el formulario XML de registro. `WebMarketplaceActivity` es la única pantalla funcional; `MainActivity` quedó como redirección para configuraciones antiguas de Android Studio. Se quitaron las dependencias y el plugin de Compose del módulo. Se conservan las entidades/repositorio Room antiguos solo para las pruebas de datos existentes.
-
-Validación de esta limpieza: `npm run typecheck`, `npm run build`, `npm test`, `:app:assembleDebug`, `:app:assembleDebugAndroidTest` y `:app:lintDebug` pasaron. En `SM-A115M` pasaron las 3 pruebas `VictorWebTest`/`VictorFrontendUiTest`; al iniciar `MainActivity`, Android resolvió y dejó reanudada `WebMarketplaceActivity`.
+- Android remains a React/WebView UI with Kotlin Room persistence; old Compose and XML frontends have been removed.
+- Deleting an owned product with a pending trade proposal returns 409 by design; resolve that proposal first.
+- Android Studio's device mirroring had a separate Samsung VP8 encoder error. The app itself installed and launched previously; screen mirroring is not part of this product deletion fix.
+- The Android Studio checkout also has unrelated local changes in `android-app/build.gradle.kts`, `android-app/gradle/wrapper/gradle-wrapper.properties`, and staged `android-app/app/src/main/res/xml/network_security_config.xml`. Preserve these when committing.
 
 ## Next steps
 
-- Rebuild and run the Victor frontend tests after this cleanup.
-- Commit and push the cleanup and this handoff (user authorized push in the current turn).
-
-## Constraints and limitations
-
-- `MainActivity` is only a compatibility redirect; the React `Crear Cuenta` flow handles marketplace registration.
-- The old Compose UI, XML screen, and their UI tests are deleted.
-- The Android frontend is hybrid: React/WebView UI with Kotlin Room persistence.
+- Commit and push only the deletion fix, focused tests, and this handoff on the current branch.
+- Keep the unrelated Android Studio checkout changes out of the deletion commit.

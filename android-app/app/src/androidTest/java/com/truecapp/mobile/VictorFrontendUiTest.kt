@@ -2,6 +2,12 @@ package com.truecapp.mobile
 
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.withText
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -39,6 +45,20 @@ class VictorFrontendUiTest {
             evaluate(scenario, "document.querySelector('form button[type=submit]').click(); true")
             await(scenario, "!!document.querySelector('article[role=button]')")
             await(scenario, "Array.from(document.querySelectorAll('article img')).some(img => img.complete && img.naturalWidth > 0)")
+        }
+    }
+
+    @Test fun deleteConfirmationCanBeAcceptedInAndroidWebView() {
+        ActivityScenario.launch(WebMarketplaceActivity::class.java).use { scenario ->
+            await(scenario, "document.readyState === 'complete' && !!window.TruecNative && !!document.body.innerText")
+            scenario.onActivity { activity ->
+                activity.webView.evaluateJavascript(
+                    "window.__truecConfirmResult = window.confirm('Confirmar eliminación');", null
+                )
+            }
+            onView(withText("Confirmar eliminación")).check(matches(isDisplayed()))
+            onView(withId(android.R.id.button1)).perform(click())
+            assertEquals("true", evaluate(scenario, "window.__truecConfirmResult === true"))
         }
     }
 }

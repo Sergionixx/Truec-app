@@ -51,6 +51,7 @@ class WebMarketplaceActivity : ComponentActivity() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean =
                 request.url.scheme != "https" || request.url.host != "appassets.androidplatform.net"
         }
+        webView.webChromeClient = WebChromeClient()
         // Only the bundled main frame can call the local Room-backed API.
         WebViewCompat.addWebMessageListener(webView, "TruecNative", setOf(origin)) { _, message, source, mainFrame, reply ->
             if (!mainFrame || source.toString() != origin) return@addWebMessageListener
