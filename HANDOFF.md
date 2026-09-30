@@ -1,10 +1,10 @@
 ﻿# Truec-app handoff
 
-Last updated: 2026-09-30 14:50, America/Mexico_City
+Last updated: 2026-09-30 14:51, America/Mexico_City
 
 ## Current objective
 
-Keep the Victor image-rich React/Vite marketplace as the only Android frontend, and make product deletion work in the app opened by Android Studio.
+Product deletion is repaired in the Android app opened by Android Studio. Keep the Victor image-rich React/Vite marketplace as the only Android frontend.
 
 ## Verified state
 
@@ -14,6 +14,7 @@ Keep the Victor image-rich React/Vite marketplace as the only Android frontend, 
 - `WebMarketplaceActivity` now sets `WebChromeClient()`. The `VictorFrontendUiTest` confirmation test passed on the connected Samsung SM-A115M: the dialog appeared and accepting it returned true to JavaScript.
 - `VictorWebTest` passed on the Samsung: deleting an owned product returned 200 and the next catalog GET omitted it.
 - `:app:connectedDebugAndroidTest` succeeded for each targeted test. The debug APK was built in the Android Studio checkout, reinstalled on the Samsung, and `WebMarketplaceActivity` launched cold with `Status: ok`.
+- Fix and tests were committed as `6fe8a59` and pushed to `origin/codex/rubrica-integrada`.
 
 ## Constraints and separate issues
 
@@ -24,5 +25,5 @@ Keep the Victor image-rich React/Vite marketplace as the only Android frontend, 
 
 ## Next steps
 
-- Commit and push only the deletion fix, focused tests, and this handoff on the current branch.
-- Keep the unrelated Android Studio checkout changes out of the deletion commit.
+- If an individual product still cannot be removed, check whether it has a pending trade proposal (the API returns 409) and inspect the error toast.
+- Keep the unrelated Android Studio checkout changes out of future commits unless reviewed separately.
